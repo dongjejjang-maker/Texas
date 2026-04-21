@@ -1,0 +1,170 @@
+[
+  {
+    "id": "1234",
+    "password": "1234",
+    "nickname": "이동재",
+    "chips": 0,
+    "rebuyCount": 63
+  },
+  {
+    "id": "2345",
+    "password": "2345",
+    "nickname": "2345",
+    "chips": 0,
+    "rebuyCount": 54
+  },
+  {
+    "id": "3456",
+    "password": "3456",
+    "nickname": "3456",
+    "chips": 0,
+    "rebuyCount": 2
+  },
+  {
+    "id": "1",
+    "password": "1",
+    "nickname": "1",
+    "chips": 0,
+    "rebuyCount": 18
+  },
+  {
+    "id": "2",
+    "password": "2",
+    "nickname": "2",
+    "chips": 0,
+    "rebuyCount": 48
+  },
+  {
+    "id": "3",
+    "password": "3",
+    "nickname": "3",
+    "chips": 0,
+    "rebuyCount": 36
+  },
+  {
+    "id": "4",
+    "password": "4",
+    "nickname": "4",
+    "chips": 0,
+    "rebuyCount": 4
+  },
+  {
+    "id": "5",
+    "password": "5",
+    "nickname": "5",
+    "chips": 0,
+    "rebuyCount": 2
+  },
+  {
+    "id": "6",
+    "password": "6",
+    "nickname": "6",
+    "chips": 0,
+    "rebuyCount": 2
+  },
+  {
+    "id": "7",
+    "password": "7",
+    "nickname": "7",
+    "chips": 0,
+    "rebuyCount": 2
+  },
+  {
+    "id": "8",
+    "password": "8",
+    "nickname": "8",
+    "chips": 0,
+    "rebuyCount": 3
+  },
+  {
+    "id": "9",
+    "password": "9",
+    "nickname": "9",
+    "chips": 0,
+    "rebuyCount": 2
+  },
+  {
+    "id": "10",
+    "password": "10",
+    "nickname": "10",
+    "chips": 0,
+    "rebuyCount": 2
+  },
+  {
+    "id": "test1",
+    "password": "test1",
+    "nickname": "tester",
+    "chips": 0,
+    "rebuyCount": 0
+  },
+  {
+    "id": "testtest",
+    "password": "testtest",
+    "nickname": "test",
+    "chips": 0,
+    "rebuyCount": 0
+  },
+  {
+    "id": "test2",
+    "password": "test2",
+    "nickname": "test2",
+    "chips": 0,
+    "rebuyCount": 0
+  },
+  {
+    "id": "aaa9660",
+    "password": "1234",
+    "nickname": "아뭉",
+    "chips": 0,
+    "rebuyCount": 6
+  },
+  {
+    "id": "wnsgur01234",
+    "password": "a12150609!@",
+    "nickname": "6974 등장이요",
+    "chips": 0,
+    "rebuyCount": 18
+  },
+  {
+    "id": "test01",
+    "password": "test01",
+    "nickname": "테스터홍",
+    "chips": 0,
+    "rebuyCount": 0
+  },
+  {
+    "id": "mk2",
+    "password": "151",
+    "nickname": "mk2",
+    "chips": 0,
+    "rebuyCount": 4
+  },
+  {
+    "id": "debugdebug",
+    "password": "password123password123",
+    "nickname": "debug",
+    "chips": 0,
+    "rebuyCount": 0
+  },
+  {
+    "id": "tester1",
+    "password": "password123",
+    "nickname": "tester1",
+    "chips": 0,
+    "rebuyCount": 0
+  },
+  {
+    "id": "tester2",
+    "password": "password123",
+    "nickname": "tester2",
+    "chips": 0,
+    "rebuyCount": 0
+  },
+  {
+    "id": "mk22",
+    "password": "3615",
+    "nickname": "mk22",
+    "chips": 0,
+    "rebuyCount": 4
+  }
+]
