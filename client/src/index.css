@@ -1589,17 +1589,17 @@ input[type="range"].raise-slider {
   .game-main-area {
     overflow: auto !important;
     display: block !important;
-    padding-bottom: 100px; /* 액션 바가 가리지 않도록 약간 감소 */
+    padding-bottom: 80px; 
   }
   
   .table-area {
-    min-height: 1000px; /* 1900px에서 축소 */
-    min-width: 450px;  /* 750px에서 축소 */
+    min-height: 900px; 
+    min-width: 420px; 
     position: relative;
-    padding: 30px 0; /* 여백 감소 */
+    padding: 0; /* 상단 패딩 제거하여 더 위로 밀착 */
   }
 
-  /* 아바타 크기 원래대로 복구 (64px 기준) */
+  /* 아바타 크기 (64px 기준) */
   .avatar-circle {
     width: 64px !important;
     height: 64px !important;
@@ -1607,6 +1607,16 @@ input[type="range"].raise-slider {
   
   .avatar-img {
     font-size: 32px !important;
+  }
+
+  /* 🍏 수직형 알약 매트 최적화 */
+  .pill-table {
+    width: 280px !important;  /* 가로에서 세로로 변경 */
+    height: 700px !important; /* 세로로 길게 */
+    border-radius: 140px !important; /* 너비의 절반으로 알약 형태 유지 */
+    background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important; /* 깊은 에머랄드 */
+    border: 5px solid rgba(0, 0, 0, 0.4) !important;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6) !important;
   }
 
   .player-info-tag {
@@ -1623,26 +1633,26 @@ input[type="range"].raise-slider {
     font-size: 12px !important;
   }
   
-  /* 본인 패 크기 및 위치 (최적화 테이블 대응) */
+  /* 본인 패 위치 보정 */
   .player-cards.is-local-player {
-    transform: translateY(-50%) scale(0.7) !important;
-    left: 70% !important;
+    transform: translateY(-50%) scale(0.75) !important;
+    left: 75% !important;
   }
 
   /* 초소형 압축 헤더 스타일 */
   .mobile-compact-header {
-    padding: 8px 12px !important; /* 여백 대폭 감소 */
-    gap: 4px !important;
+    padding: 4px 10px !important;
+    gap: 0 !important;
   }
   
   .mobile-compact-header .header-top-row {
-    margin-bottom: 2px !important;
+    margin-bottom: 0 !important;
   }
 
   /* 버튼 내 자동 카운트다운 스타일 */
   .btn-countdown-inline {
     font-weight: bold;
-    color: #facc15; /* 노란색 강조 */
+    color: #facc15;
     margin-left: 2px;
     font-size: 10px;
   }
@@ -1651,35 +1661,33 @@ input[type="range"].raise-slider {
   .mobile-two-row-bar {
     flex-direction: column !important;
     height: auto !important;
-    padding: 12px 15px !important;
-    background: rgba(15, 23, 42, 0.95) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 15px !important;
+    background: rgba(15, 23, 42, 0.98) !important;
   }
 
   .action-btn {
-    padding: 10px 15px !important;
+    padding: 8px 12px !important;
     font-size: 14px !important;
     min-width: 80px !important;
-    height: 44px !important;
+    height: 42px !important;
   }
 
   .function-row .premium-btn {
-    min-width: 110px !important;
-    height: 40px !important;
+    min-width: 100px !important;
+    height: 38px !important;
     font-size: 13px !important;
   }
 
   /* 베팅 바 위치 고정 */
   .bet-control-container {
     width: 95% !important;
-    bottom: 130px !important;
+    bottom: 120px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    background: rgba(0, 0, 0, 0.8) !important;
   }
 
   .hand-rank-badge {
-    bottom: 170px !important;
+    bottom: 160px !important;
   }
 }
 
