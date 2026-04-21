@@ -1577,3 +1577,58 @@ input[type="range"].raise-slider {
   animation: actionFloat 1.8s ease-out forwards, allInPulse 1s infinite !important;
 }
 
+/* =========================================================
+   📱 MOBILE OPTIMIZATION (iPhone 17+ Responsive)
+   ========================================================= */
+@media (max-width: 768px) {
+  .avatar-circle {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  
+  .avatar-img {
+    font-size: 24px !important;
+  }
+
+  .player-info-tag {
+    padding: 2px 4px !important;
+    min-width: 60px !important;
+    transform: translateY(-2px) !important;
+  }
+
+  .p-name {
+    font-size: 10px !important;
+    max-width: 55px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .p-chips {
+    font-size: 9px !important;
+  }
+  
+  /* 본인 패 크기 추가 축소 (380px 너비 대응) */
+  .player-cards.is-local-player {
+    transform: translateY(-50%) scale(0.55) !important;
+    left: 65% !important;
+  }
+
+  /* 액션 버튼 컴팩트화 */
+  .action-btn {
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    min-width: 65px !important;
+  }
+
+  /* 베팅 바 위치 및 크기 조정 */
+  .bet-control-container {
+    width: 90% !important;
+    bottom: 75px !important;
+  }
+
+  .hand-rank-badge {
+    font-size: 12px !important;
+    padding: 4px 10px !important;
+    bottom: 110px !important;
+  }
+}
