@@ -999,8 +999,7 @@ function GameRoom({ userInfo, setUserInfo }) {
           </div>
         )}
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 export default GameRoom;
