@@ -261,6 +261,7 @@ function GameRoom({ userInfo, setUserInfo }) {
 
     const handleUpdateGameState = (newState) => {
       setGameState(newState);
+      setIsJoined(true); // 🍏 입장에 성공했음을 표시
       // 🍏 설정창이 닫혀있을 때는 서버 데이터로 로컬 설정 초기화 (동기화)
       if (!showSettings && newState.settings) {
         setTempSettings(newState.settings);
@@ -310,7 +311,7 @@ function GameRoom({ userInfo, setUserInfo }) {
         relIdx = pIdx;
       }
       
-      const offset = seatOffsets[Math.min(relIdx, seatOffsets.length - 1)];
+      const offset = seatOffsets[Math.min(relIdx, (seatOffsets?.length || 1) - 1)];
       const id = Date.now() + Math.random();
       
       const newBubble = {
@@ -328,10 +329,16 @@ function GameRoom({ userInfo, setUserInfo }) {
       }, 2000);
     };
 
+    const handleJoinRoomError = (data) => {
+      alert(data.message || '방에 입장할 수 없습니다.');
+      navigate('/lobby', { replace: true });
+    };
+
     socket.on('updateGameState', handleUpdateGameState);
     socket.on('chatMessage', handleChatMessage);
     socket.on('dealPrivateCards', handleDealPrivateCards);
     socket.on('playerActionNotification', handlePlayerActionNotification);
+    socket.on('joinRoomError', handleJoinRoomError);
 
     return () => {
       socket.emit('leaveRoom');
@@ -339,6 +346,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       socket.off('chatMessage', handleChatMessage);
       socket.off('dealPrivateCards', handleDealPrivateCards);
       socket.off('playerActionNotification', handlePlayerActionNotification);
+      socket.off('joinRoomError', handleJoinRoomError);
     };
   }, [roomId, userInfo, setUserInfo, showChatModal]);
 
@@ -384,10 +392,22 @@ function GameRoom({ userInfo, setUserInfo }) {
 
 
 
+  const [isJoined, setIsJoined] = useState(false);
+
+  useEffect(() => {
+    if (!gameState && !isJoined) {
+      const timer = setTimeout(() => {
+        console.log("⏱️ GameState timeout - attempting re-join");
+        socket.emit('joinRoom', { roomId: Number(roomId), nickname: userInfo?.nickname });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState, isJoined, roomId, userInfo]);
+
   const sendChat = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-    socket.emit('chatMessage', { roomId: Number(roomId), nickname: userInfo?.nickname, message: chatInput });
+    socket.emit('chatMessage', { roomId: Number(roomId), nickname: nickname || userInfo?.nickname, message: chatInput });
     setChatInput('');
   };
 
@@ -406,7 +426,8 @@ function GameRoom({ userInfo, setUserInfo }) {
   };
 
   const potChips = useMemo(() => {
-    const pot = gameState?.pot || 0;
+    if (!gameState) return [];
+    const pot = gameState.pot || 0;
     if (pot === 0) return [];
     const chips = [];
     let remaining = pot;
@@ -420,6 +441,7 @@ function GameRoom({ userInfo, setUserInfo }) {
   }, [gameState?.pot]);
 
   const chipPositions = useMemo(() => {
+    if (potChips.length === 0) return [];
     return potChips.map((_, i) => {
       const angle = (i * 137.508) % 360;
       const dist = 8 + (i * 11) % 38;
@@ -428,7 +450,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       const rot = (i * 47) % 360;
       return { dx, dy, rot };
     });
-  }, [potChips.length, gameState?.pot]);
+  }, [potChips.length]);
 
   useEffect(() => {
     if (!gameState?.players) return;
@@ -440,7 +462,7 @@ function GameRoom({ userInfo, setUserInfo }) {
         const myIdxLocal = gameState.players.findIndex(p => p.nickname === userInfo?.nickname);
         const pIdx = gameState.players.findIndex(p => p.nickname === player.nickname);
         const relIdx = myIdxLocal > -1 ? (pIdx - myIdxLocal + gameState.players.length) % gameState.players.length : 0;
-        const offset = seatOffsets[Math.min(relIdx, 5)];
+        const offset = (seatOffsets && seatOffsets.length > 0) ? seatOffsets[Math.min(relIdx, seatOffsets.length - 1)] : { x: 0, y: 0 };
         const addedAmt = curr - prev;
         const denom = CHIP_DENOMS.find(d => addedAmt >= d.value) || CHIP_DENOMS[CHIP_DENOMS.length - 1];
         const id = `${player.nickname}-${Date.now()}-${Math.random()}`;
