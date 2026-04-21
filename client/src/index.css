@@ -1585,18 +1585,18 @@ input[type="range"].raise-slider {
    📱 MASSIVE MOBILE OPTIMIZATION (684x1800 Table)
    ========================================================= */
 @media (max-width: 768px) {
-  /* 거대 테이블 탐색을 위한 스크롤 허용 */
+  /* 거대 테이블 탐색을 위한 스크롤 허용 (850px 높이에 최적화) */
   .game-main-area {
     overflow: auto !important;
     display: block !important;
-    padding-bottom: 120px; /* 액션 바가 가리지 않도록 */
+    padding-bottom: 100px; /* 액션 바가 가리지 않도록 약간 감소 */
   }
   
   .table-area {
-    min-height: 1900px;
-    min-width: 750px;
+    min-height: 1000px; /* 1900px에서 축소 */
+    min-width: 450px;  /* 750px에서 축소 */
     position: relative;
-    padding: 50px 0;
+    padding: 30px 0; /* 여백 감소 */
   }
 
   /* 아바타 크기 원래대로 복구 (64px 기준) */
@@ -1623,57 +1623,63 @@ input[type="range"].raise-slider {
     font-size: 12px !important;
   }
   
-  /* 본인 패 크기 및 위치 (거대 테이블 대응) */
+  /* 본인 패 크기 및 위치 (최적화 테이블 대응) */
   .player-cards.is-local-player {
-    transform: translateY(-50%) scale(0.65) !important;
+    transform: translateY(-50%) scale(0.7) !important;
     left: 70% !important;
   }
 
-  /* 수직형 헤더 스타일 */
-  .mobile-vertical-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-    padding: 15px !important;
+  /* 초소형 압축 헤더 스타일 */
+  .mobile-compact-header {
+    padding: 8px 12px !important; /* 여백 대폭 감소 */
+    gap: 4px !important;
   }
   
-  .header-top-row {
-    margin-bottom: 5px;
+  .mobile-compact-header .header-top-row {
+    margin-bottom: 2px !important;
+  }
+
+  /* 버튼 내 자동 카운트다운 스타일 */
+  .btn-countdown-inline {
+    font-weight: bold;
+    color: #facc15; /* 노란색 강조 */
+    margin-left: 2px;
+    font-size: 10px;
   }
 
   /* 2층 구조 액션 바 스타일 */
   .mobile-two-row-bar {
     flex-direction: column !important;
     height: auto !important;
-    padding: 15px !important;
+    padding: 12px 15px !important;
     background: rgba(15, 23, 42, 0.95) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .action-btn {
-    padding: 12px 18px !important;
-    font-size: 15px !important;
-    min-width: 85px !important;
-    height: 48px !important;
+    padding: 10px 15px !important;
+    font-size: 14px !important;
+    min-width: 80px !important;
+    height: 44px !important;
   }
 
   .function-row .premium-btn {
-    min-width: 120px !important;
-    height: 44px !important;
-    font-size: 14px !important;
+    min-width: 110px !important;
+    height: 40px !important;
+    font-size: 13px !important;
   }
 
   /* 베팅 바 위치 고정 */
   .bet-control-container {
     width: 95% !important;
-    bottom: 140px !important;
+    bottom: 130px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     background: rgba(0, 0, 0, 0.8) !important;
   }
 
   .hand-rank-badge {
-    bottom: 180px !important;
+    bottom: 170px !important;
   }
 }
 

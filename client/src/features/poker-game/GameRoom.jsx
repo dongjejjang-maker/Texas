@@ -67,14 +67,14 @@ const DESKTOP_OFFSETS = [
 ];
 
 const MOBILE_OFFSETS = [
-  { x: 0, y: 850 },       // 0: 6시 (나) - 거대 테이블 하단
-  { x: -280, y: 550 },   // 1: 7시 30분
-  { x: -342, y: 0 },     // 2: 9시 - 사이드
-  { x: -280, y: -550 },  // 3: 10시 30분
-  { x: 0, y: -850 },     // 4: 12시 - 거대 테이블 상단
-  { x: 280, y: -550 },   // 5: 1시 30분
-  { x: 342, y: 0 },      // 6: 3시 - 사이드
-  { x: 280, y: 550 },    // 7: 4시 30분
+  { x: 0, y: 395 },       // 0: 6시 (나) - 상향 조정
+  { x: -145, y: 275 },   // 1: 7시 30분
+  { x: -175, y: 0 },     // 2: 9시 - 사이드
+  { x: -145, y: -275 },  // 3: 10시 30분
+  { x: 0, y: -395 },     // 4: 12시 - 상향 조정
+  { x: 145, y: -275 },   // 5: 1시 30분
+  { x: 175, y: 0 },      // 6: 3시 - 사이드
+  { x: 145, y: 275 },    // 7: 4시 30분
 ];
 
 function GameRoom({ userInfo, setUserInfo }) {
@@ -584,38 +584,40 @@ function GameRoom({ userInfo, setUserInfo }) {
   return (
     <div className="game-layout-wrapper">
       <div className="game-main-area">
-        <div className={`game-header glass-panel ${isMobile ? 'mobile-vertical-header' : ''}`} style={{ marginBottom: '15px' }}>
+        <div className={`game-header glass-panel ${isMobile ? 'mobile-compact-header' : ''}`} style={{ marginBottom: isMobile ? '5px' : '15px' }}>
           <div className="header-top-row" style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }}>← 나가기</div>
+            <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }} style={{ fontSize: isMobile ? '13px' : '14px' }}>← 나가기</div>
             
-            {/* 자동진행 버튼 */}
-            {(gameState.phase === '대기 중' || gameState.phase.includes('종료') || gameState.phase.includes('기권승')) ? (
-              <div 
-                className={`header-menu auto-toggle-btn ${gameState.isAutoMode ? 'auto-on' : 'auto-off'}`} 
-                onClick={() => socket.emit('toggleAutoMode', { roomId: Number(roomId) })}
-                style={{ position: 'relative', minWidth: '120px' }}
-              >
-                <div className="btn-main-text" style={{ fontSize: isMobile ? '12px' : '14px' }}>
-                  {gameState.isAutoMode ? '⏹️ 자동 중' : '▶️ 자동 시작'}
-                </div>
-              </div>
-            ) : (
-              <div className="header-menu disabled" style={{ opacity: 0.5, cursor: 'not-allowed', background: '#475569', minWidth: '120px' }}>
-                🚀 진행 중
-              </div>
-            )}
-          </div>
-
-          <div className="header-title-row" style={{ marginTop: isMobile ? '8px' : '0', width: '100%', display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'flex-start' : 'center', gap: '8px' }}>
-            <div className="header-title">
-              {roomTitle} ({gameState.players.length}/8)
-              <button className="settings-gear-btn" onClick={() => setShowSettings(true)} title="방 설정" style={{ marginLeft: '8px' }}>
+            <div className="header-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* ⚙️ 설정 아이콘 이동 (자동 버튼 왼쪽) */}
+              <button className="settings-gear-btn" onClick={() => setShowSettings(true)} title="방 설정" style={{ fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer', padding: '5px' }}>
                 ⚙️
               </button>
+
+              {/* 자동진행 버튼 */}
+              {(gameState.phase === '대기 중' || gameState.phase.includes('종료') || gameState.phase.includes('기권승')) ? (
+                <div 
+                  className={`header-menu auto-toggle-btn ${gameState.isAutoMode ? 'auto-on' : 'auto-off'}`} 
+                  onClick={() => socket.emit('toggleAutoMode', { roomId: Number(roomId) })}
+                  style={{ position: 'relative', minWidth: isMobile ? '100px' : '120px', padding: isMobile ? '6px 10px' : '8px 15px' }}
+                >
+                  <div className="btn-main-text" style={{ fontSize: isMobile ? '11px' : '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>{gameState.isAutoMode ? '⏹️ 자동 중' : '▶️ 자동 시작'}</span>
+                    {gameState.isAutoMode && countdown !== null && <span className="btn-countdown-inline">({countdown}s)</span>}
+                  </div>
+                </div>
+              ) : (
+                <div className="header-menu disabled" style={{ opacity: 0.5, cursor: 'not-allowed', background: '#475569', minWidth: isMobile ? '100px' : '120px', padding: isMobile ? '6px 10px' : '8px 15px' }}>
+                  <span style={{ fontSize: isMobile ? '11px' : '14px' }}>🚀 진행 중</span>
+                </div>
+              )}
             </div>
-            {gameState.isAutoMode && countdown !== null && isMobile && (
-              <span className="auto-countdown-label" style={{ fontSize: '10px', marginLeft: 'auto' }}>{countdown}s</span>
-            )}
+          </div>
+
+          <div className="header-title-row" style={{ marginTop: isMobile ? '2px' : '8px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'flex-start' : 'center' }}>
+            <div className="header-title" style={{ fontSize: isMobile ? '0.75rem' : '1rem', color: 'rgba(255,255,255,0.7)' }}>
+              {roomTitle} ({gameState.players.length}/8)
+            </div>
           </div>
         </div>
 
@@ -636,9 +638,9 @@ function GameRoom({ userInfo, setUserInfo }) {
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: isMobile ? '684px' : '710px',
-              height: isMobile ? '1800px' : '462px',
-              borderRadius: isMobile ? '342px' : '231px',
+              width: isMobile ? '400px' : '710px',
+              height: isMobile ? '850px' : '462px',
+              borderRadius: isMobile ? '200px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
               boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
