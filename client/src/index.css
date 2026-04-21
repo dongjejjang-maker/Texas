@@ -1580,55 +1580,108 @@ input[type="range"].raise-slider {
 /* =========================================================
    📱 MOBILE OPTIMIZATION (iPhone 17+ Responsive)
    ========================================================= */
+
+/* =========================================================
+   📱 MASSIVE MOBILE OPTIMIZATION (684x1800 Table)
+   ========================================================= */
 @media (max-width: 768px) {
+  /* 거대 테이블 탐색을 위한 스크롤 허용 */
+  .game-main-area {
+    overflow: auto !important;
+    display: block !important;
+    padding-bottom: 120px; /* 액션 바가 가리지 않도록 */
+  }
+  
+  .table-area {
+    min-height: 1900px;
+    min-width: 750px;
+    position: relative;
+    padding: 50px 0;
+  }
+
+  /* 아바타 크기 원래대로 복구 (64px 기준) */
   .avatar-circle {
-    width: 48px !important;
-    height: 48px !important;
+    width: 64px !important;
+    height: 64px !important;
   }
   
   .avatar-img {
-    font-size: 24px !important;
+    font-size: 32px !important;
   }
 
   .player-info-tag {
-    padding: 2px 4px !important;
-    min-width: 60px !important;
-    transform: translateY(-2px) !important;
+    padding: 4px 8px !important;
+    min-width: 80px !important;
   }
 
   .p-name {
-    font-size: 10px !important;
-    max-width: 55px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 13px !important;
+    max-width: 80px;
   }
 
   .p-chips {
-    font-size: 9px !important;
+    font-size: 12px !important;
   }
   
-  /* 본인 패 크기 추가 축소 (380px 너비 대응) */
+  /* 본인 패 크기 및 위치 (거대 테이블 대응) */
   .player-cards.is-local-player {
-    transform: translateY(-50%) scale(0.55) !important;
-    left: 65% !important;
+    transform: translateY(-50%) scale(0.65) !important;
+    left: 70% !important;
   }
 
-  /* 액션 버튼 컴팩트화 */
+  /* 수직형 헤더 스타일 */
+  .mobile-vertical-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 15px !important;
+  }
+  
+  .header-top-row {
+    margin-bottom: 5px;
+  }
+
+  /* 2층 구조 액션 바 스타일 */
+  .mobile-two-row-bar {
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 15px !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
   .action-btn {
-    padding: 6px 10px !important;
-    font-size: 13px !important;
-    min-width: 65px !important;
+    padding: 12px 18px !important;
+    font-size: 15px !important;
+    min-width: 85px !important;
+    height: 48px !important;
   }
 
-  /* 베팅 바 위치 및 크기 조정 */
+  .function-row .premium-btn {
+    min-width: 120px !important;
+    height: 44px !important;
+    font-size: 14px !important;
+  }
+
+  /* 베팅 바 위치 고정 */
   .bet-control-container {
-    width: 90% !important;
-    bottom: 75px !important;
+    width: 95% !important;
+    bottom: 140px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: rgba(0, 0, 0, 0.8) !important;
   }
 
   .hand-rank-badge {
-    font-size: 12px !important;
-    padding: 4px 10px !important;
-    bottom: 110px !important;
+    bottom: 180px !important;
   }
+}
+
+/* 🍯 공통 칩 시스템 보강 스타일 */
+.relative-pot-chips .chip {
+  margin: 0 !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 1 !important; /* 테이블 위, 아바타 아래 */
 }

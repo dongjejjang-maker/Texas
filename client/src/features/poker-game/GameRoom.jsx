@@ -67,14 +67,14 @@ const DESKTOP_OFFSETS = [
 ];
 
 const MOBILE_OFFSETS = [
-  { x: 0, y: 300 },       // 0: 6시 (나) - 테두리 중앙
-  { x: -135, y: 215 },   // 1: 7시 30분
-  { x: -190, y: 0 },     // 2: 9시 - 테두리 중앙
-  { x: -135, y: -215 },  // 3: 10시 30분 (11시)
-  { x: 0, y: -300 },     // 4: 12시 - 테두리 중앙
-  { x: 135, y: -215 },   // 5: 1시 30분
-  { x: 190, y: 0 },      // 6: 3시 - 테두리 중앙
-  { x: 135, y: 215 },    // 7: 4시 30분 (5시)
+  { x: 0, y: 850 },       // 0: 6시 (나) - 거대 테이블 하단
+  { x: -280, y: 550 },   // 1: 7시 30분
+  { x: -342, y: 0 },     // 2: 9시 - 사이드
+  { x: -280, y: -550 },  // 3: 10시 30분
+  { x: 0, y: -850 },     // 4: 12시 - 거대 테이블 상단
+  { x: 280, y: -550 },   // 5: 1시 30분
+  { x: 342, y: 0 },      // 6: 3시 - 사이드
+  { x: 280, y: 550 },    // 7: 4시 30분
 ];
 
 function GameRoom({ userInfo, setUserInfo }) {
@@ -561,43 +561,39 @@ function GameRoom({ userInfo, setUserInfo }) {
   return (
     <div className="game-layout-wrapper">
       <div className="game-main-area">
-        <div className="game-header glass-panel" style={{ marginBottom: '15px' }}>
-          <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }}>← 나가기</div>
-          <div className="header-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {roomTitle} ({gameState.players.length}/8)
-            <button className="settings-gear-btn" onClick={() => setShowSettings(true)} title="방 설정">
-              ⚙️
-            </button>
-          </div>
-          
-          {/* 🍏 자동진행 버튼을 이전 '게임 시작' 버튼 위치로 복구 */}
-          {(gameState.phase === '대기 중' || gameState.phase.includes('종료') || gameState.phase.includes('기권승')) ? (
-            <div 
-              className={`header-menu auto-toggle-btn ${gameState.isAutoMode ? 'auto-on' : 'auto-off'}`} 
-              onClick={() => socket.emit('toggleAutoMode', { roomId: Number(roomId) })}
-              style={{ position: 'relative', minWidth: '140px' }}
-            >
-              <div className="btn-main-text">
-                {gameState.isAutoMode ? '⏹️ 자동진행 중' : '▶️ 자동진행 시작'}
+        <div className={`game-header glass-panel ${isMobile ? 'mobile-vertical-header' : ''}`} style={{ marginBottom: '15px' }}>
+          <div className="header-top-row" style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }}>← 나가기</div>
+            
+            {/* 자동진행 버튼 */}
+            {(gameState.phase === '대기 중' || gameState.phase.includes('종료') || gameState.phase.includes('기권승')) ? (
+              <div 
+                className={`header-menu auto-toggle-btn ${gameState.isAutoMode ? 'auto-on' : 'auto-off'}`} 
+                onClick={() => socket.emit('toggleAutoMode', { roomId: Number(roomId) })}
+                style={{ position: 'relative', minWidth: '120px' }}
+              >
+                <div className="btn-main-text" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                  {gameState.isAutoMode ? '⏹️ 자동 중' : '▶️ 자동 시작'}
+                </div>
               </div>
-                {gameState.isAutoMode && countdown !== null && (
-                  <div 
-                    className={`auto-countdown-label ${countdown <= 3 ? 'emergency' : ''}`}
-                    style={{ 
-                      color: countdown <= 3 ? '#ff4d4d' : '#fbbf24',
-                      fontWeight: countdown <= 3 ? 'bold' : 'normal',
-                      textShadow: countdown <= 3 ? '0 0 10px rgba(255, 77, 77, 0.5)' : 'none'
-                    }}
-                  >
-                    {countdown}s 후 다음 판 시작
-                  </div>
-                )}
+            ) : (
+              <div className="header-menu disabled" style={{ opacity: 0.5, cursor: 'not-allowed', background: '#475569', minWidth: '120px' }}>
+                🚀 진행 중
+              </div>
+            )}
+          </div>
+
+          <div className="header-title-row" style={{ marginTop: isMobile ? '8px' : '0', width: '100%', display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'flex-start' : 'center', gap: '8px' }}>
+            <div className="header-title">
+              {roomTitle} ({gameState.players.length}/8)
+              <button className="settings-gear-btn" onClick={() => setShowSettings(true)} title="방 설정" style={{ marginLeft: '8px' }}>
+                ⚙️
+              </button>
             </div>
-          ) : (
-            <div className="header-menu disabled" style={{ opacity: 0.5, cursor: 'not-allowed', background: '#475569' }}>
-              🚀 진행 중
-            </div>
-          )}
+            {gameState.isAutoMode && countdown !== null && isMobile && (
+              <span className="auto-countdown-label" style={{ fontSize: '10px', marginLeft: 'auto' }}>{countdown}s</span>
+            )}
+          </div>
         </div>
 
         <div className="mini-chat-container" onClick={() => { setShowChatModal(true); setHasNewMessage(false); }}>
@@ -609,10 +605,44 @@ function GameRoom({ userInfo, setUserInfo }) {
         </div>
 
         <div className="table-area">
+          <div 
+            ref={containerRef}
+            className="poker-table-border"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: isMobile ? '684px' : '710px',
+              height: isMobile ? '1800px' : '462px',
+              borderRadius: isMobile ? '342px' : '231px',
+              backgroundColor: 'rgba(0,0,0,0.2)',
+              border: '6px solid rgba(255,255,255,0.15)',
+              boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
+              pointerEvents: 'none',
+              zIndex: 0
+            }}
+          />
+
           <div className="pill-table">
             <div className="table-center-info">
               <div className="table-text">상태: {gameState.phase}</div>
-              <div className="pot-display" style={{ marginTop: '5px', fontSize: '24px', fontWeight: 'bold', color: '#facc15', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              <div className="pot-display" style={{ marginTop: '5px', fontSize: '24px', fontWeight: 'bold', color: '#facc15', textShadow: '0 2px 4px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                
+                {/* 🍯 [신규] 팟 텍스트 좌측에 칩 컨테이너 배치 */}
+                <div className="pot-chips-container relative-pot-chips" style={{ position: 'relative', width: '40px', height: '40px', left: '0', top: '0', transform: 'none', zIndex: 1 }}>
+                  {potChips.map((chip, i) => {
+                    const pos = chipPositions[i] || { dx: 0, dy: 0, rot: 0 };
+                    const sweepStyle = isGameOver && winnerTransforms.length > 0 ? {
+                      animation: winnerTransforms.map((wt, wi) => `winnerSweep 0.9s ${wi * 0.05}s forwards cubic-bezier(0.8,-0.6,0.2,1.5)`).join(', '),
+                      '--wx': winnerTransforms[0]?.wx, '--wy': winnerTransforms[0]?.wy,
+                    } : { animation: `dropChip 0.3s ease-out ${i * 0.04}s both` };
+                    return (
+                      <div key={`pot-${i}-${gameState?.pot}`} className="chip" style={{ '--dx': `${pos.dx / 4}px`, '--dy': `${pos.dy / 4}px`, '--rot': `${pos.rot}deg`, '--wx': winnerTransforms[0]?.wx || '0px', '--wy': winnerTransforms[0]?.wy || '0px', width: '18px', height: '18px', backgroundColor: chip.bg, borderColor: chip.border, ...sweepStyle }} />
+                    );
+                  })}
+                </div>
+                
                 POT: <span>{gameState?.pot || 0}</span>
               </div>
 
@@ -665,18 +695,7 @@ function GameRoom({ userInfo, setUserInfo }) {
               <div key={c.id} className="bet-anim-chip" style={{ '--from-x': `${c.fromX}px`, '--from-y': `${c.fromY}px`, background: c.bg, border: `3px dashed ${c.border}` }} />
             ))}
 
-            <div className="pot-chips-container" style={{ '--wx': winnerTransforms[0]?.wx || '0px', '--wy': winnerTransforms[0]?.wy || '0px' }}>
-              {potChips.map((chip, i) => {
-                const pos = chipPositions[i] || { dx: 0, dy: 0, rot: 0 };
-                const sweepStyle = isGameOver && winnerTransforms.length > 0 ? {
-                  animation: winnerTransforms.map((wt, wi) => `winnerSweep 0.9s ${wi * 0.05}s forwards cubic-bezier(0.8,-0.6,0.2,1.5)`).join(', '),
-                  '--wx': winnerTransforms[0]?.wx, '--wy': winnerTransforms[0]?.wy,
-                } : { animation: `dropChip 0.3s ease-out ${i * 0.04}s both` };
-                return (
-                  <div key={`pot-${i}-${gameState?.pot}`} className="chip" style={{ '--dx': `${pos.dx}px`, '--dy': `${pos.dy}px`, '--rot': `${pos.rot}deg`, '--wx': winnerTransforms[0]?.wx || '0px', '--wy': winnerTransforms[0]?.wy || '0px', backgroundColor: chip.bg, borderColor: chip.border, ...sweepStyle }} />
-                );
-              })}
-            </div>
+            {/* 🍏 기존 중앙 pot-chips-container 제거됨 (위 pot-display 내부로 이동) */}
 
             {sortedPlayers.map((player, idx) => {
               // 🍏 [신규] 8인용 통합 좌표 레이아웃 엔진 적용
@@ -802,14 +821,21 @@ function GameRoom({ userInfo, setUserInfo }) {
           </div>
         </div>
 
-        <div className="bottom-action-bar">
-          <div className="action-row">
-            {showRebuyBtn && !myInfo?.waitingForNext && (
-              <button className="premium-btn primary-btn active-pulse" style={{ marginRight: 'auto' }} onClick={() => { setShowRebuyBtn(false); socket.emit('spectatorRebuy', { roomId: Number(roomId), nickname: userInfo.nickname }); }}>리바인 하기</button>
-            )}
-            {myInfo?.waitingForNext && (
-              <button className="action-btn disabled" style={{ marginRight: 'auto', opacity: 0.7, cursor: 'not-allowed', backgroundColor: '#475569' }} disabled>참여 대기</button>
-            )}
+        <div className={`bottom-action-bar ${isMobile ? 'mobile-two-row-bar' : ''}`}>
+          {/* 🍏 상단층: 리바인, 참여 대기 (조건부 출력) */}
+          {(showRebuyBtn || myInfo?.waitingForNext) && (
+            <div className="function-row" style={{ display: 'flex', gap: '10px', marginBottom: '8px', justifyContent: 'center' }}>
+              {showRebuyBtn && !myInfo?.waitingForNext && (
+                <button className="premium-btn primary-btn active-pulse" style={{ padding: '10px 20px' }} onClick={() => { setShowRebuyBtn(false); socket.emit('spectatorRebuy', { roomId: Number(roomId), nickname: userInfo.nickname }); }}>리바인 하기</button>
+              )}
+              {myInfo?.waitingForNext && (
+                <button className="action-btn disabled" style={{ opacity: 0.7, cursor: 'not-allowed', backgroundColor: '#475569' }} disabled>참여 대기 중</button>
+              )}
+            </div>
+          )}
+          
+          {/* 🍏 하단층: 폴드, 콜, 레이즈 고정 배치 */}
+          <div className="action-row" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
             <button className={`action-btn fold ${!isMyTurn ? 'disabled' : ''}`} disabled={!isMyTurn} onClick={() => handleAction('폴드')}>폴드</button>
             <button className={`action-btn call ${!isMyTurn ? 'disabled' : ''}`} disabled={!isMyTurn} onClick={() => handleAction('콜')}>{callText}</button>
             <button className={`action-btn raise ${(!isMyTurn || isAllInCall) ? 'disabled' : ''}`} disabled={!isMyTurn || isAllInCall} onClick={() => { setRaiseAmount(Math.min(minRaise, myInfo?.chips || 0)); setShowRaisePanel(true); }}>레이즈</button>
