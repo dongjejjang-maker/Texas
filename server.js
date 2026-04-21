@@ -46,6 +46,22 @@ if (!fs.existsSync(path.join(DIST_PATH, 'index.html'))) {
 
 app.use(express.static(DIST_PATH));
 
+// 🔍 빌드 폴더 진단 로그
+console.log('--- [STARTUP DIAGNOSIS] ---');
+console.log('Current __dirname:', __dirname);
+console.log('Target DIST_PATH:', DIST_PATH);
+try {
+    if (fs.existsSync(DIST_PATH)) {
+        const files = fs.readdirSync(DIST_PATH);
+        console.log('Files in client/dist:', files.length > 0 ? files.join(', ') : 'EMPTY');
+    } else {
+        console.warn('❌ [DIAGNOSIS ERROR]: client/dist folder does not exist!');
+    }
+} catch (e) {
+    console.error('❌ [DIAGNOSIS ERROR]: Unable to read client/dist folder', e);
+}
+console.log('---------------------------');
+
 app.get('/', (req, res) => {
     const indexPath = path.join(DIST_PATH, 'index.html');
     if (fs.existsSync(indexPath)) {
