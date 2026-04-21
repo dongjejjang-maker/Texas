@@ -37,13 +37,23 @@ app.use((req, res, next) => {
 });
 
 // --- 0. 최우선 정적 파일 직접 서빙 (Hanging 방지) ---
-app.get('/', (req, res) => {
-    const indexPath = path.join(__dirname, 'client/dist', 'index.html');
-    res.sendFile(indexPath);
-});
+const DIST_PATH = path.resolve(__dirname, 'client/dist');
 
-// 나머지 정적 파일은 express.static으로 처리
-app.use(express.static(path.join(__dirname, 'client/dist')));
+// 빌드 결과물이 있는지 초기 체크 (디버깅용)
+if (!fs.existsSync(path.join(DIST_PATH, 'index.html'))) {
+    console.warn('⚠️ WARNING: client/dist/index.html not found. Did the build fail?');
+}
+
+app.use(express.static(DIST_PATH));
+
+app.get('/', (req, res) => {
+    const indexPath = path.join(DIST_PATH, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send('Frontend build not found. Please check deployment logs.');
+    }
+});
 
 // 🔍 가동 확인용 헬스체크 추가
 app.get('/api/ping', (req, res) => {
@@ -1032,8 +1042,12 @@ function getPublicGameState(gs, socketId) {
 }
 
 app.use((req, res) => {
-    const indexPath = path.join(__dirname, 'client/dist', 'index.html');
-    res.sendFile(indexPath);
+    const indexPath = path.join(DIST_PATH, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send('SPA fallback: Frontend build not found.');
+    }
 });
 
 const PORT = process.env.PORT || 3000;
