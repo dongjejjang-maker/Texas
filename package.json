@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm install && (cd client && npm install && npm run build)",
+    "postinstall": "cd client && npm install && npm run build",
+    "build": "npm run postinstall",
     "start": "node server.js"
   },
   "keywords": [],
