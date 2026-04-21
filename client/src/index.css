@@ -1585,21 +1585,32 @@ input[type="range"].raise-slider {
    📱 MASSIVE MOBILE OPTIMIZATION (684x1800 Table)
    ========================================================= */
 @media (max-width: 768px) {
-  /* 거대 테이블 탐색을 위한 스크롤 허용 (850px 높이에 최적화) */
+  /* 🍏 전체 레이아웃: 삼단 분리 Flexbox */
+  .game-layout-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  /* 중앙 스크롤 영역 */
   .game-main-area {
-    overflow: auto !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     display: block !important;
-    padding-bottom: 80px; 
+    background: #0f172a;
+    -webkit-overflow-scrolling: touch;
   }
   
   .table-area {
-    min-height: 900px; 
-    min-width: 420px; 
+    min-height: 870px;
+    min-width: 420px;
     position: relative;
-    padding: 0; /* 상단 패딩 제거하여 더 위로 밀착 */
+    padding: 15px 0;
   }
 
-  /* 아바타 크기 (64px 기준) */
+  /* 아바타 스타일 복구 */
   .avatar-circle {
     width: 64px !important;
     height: 64px !important;
@@ -1607,16 +1618,6 @@ input[type="range"].raise-slider {
   
   .avatar-img {
     font-size: 32px !important;
-  }
-
-  /* 🍏 수직형 알약 매트 최적화 */
-  .pill-table {
-    width: 280px !important;  /* 가로에서 세로로 변경 */
-    height: 700px !important; /* 세로로 길게 */
-    border-radius: 140px !important; /* 너비의 절반으로 알약 형태 유지 */
-    background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important; /* 깊은 에머랄드 */
-    border: 5px solid rgba(0, 0, 0, 0.4) !important;
-    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6) !important;
   }
 
   .player-info-tag {
@@ -1632,14 +1633,23 @@ input[type="range"].raise-slider {
   .p-chips {
     font-size: 12px !important;
   }
+
+  /* 수직형 알약 매트 복구 */
+  .pill-table {
+    width: 280px !important;
+    height: 700px !important;
+    border-radius: 140px !important;
+    background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important;
+    border: 5px solid rgba(0, 0, 0, 0.4) !important;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6) !important;
+  }
   
-  /* 본인 패 위치 보정 */
   .player-cards.is-local-player {
     transform: translateY(-50%) scale(0.75) !important;
     left: 75% !important;
   }
 
-  /* 초소형 압축 헤더 스타일 */
+  /* 초소형 압축 헤더 스타일 복구 */
   .mobile-compact-header {
     padding: 4px 10px !important;
     gap: 0 !important;
@@ -1649,17 +1659,8 @@ input[type="range"].raise-slider {
     margin-bottom: 0 !important;
   }
 
-  /* 버튼 내 자동 카운트다운 스타일 */
-  .btn-countdown-inline {
-    font-weight: bold;
-    color: #facc15;
-    margin-left: 2px;
-    font-size: 10px;
-  }
-
-  /* 2층 구조 액션 바 스타일 - 화면 하단에 고정 */
+  /* 하단 고정 액션 바 (스크롤 불필요) */
   .bottom-action-bar {
-    position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
     width: 100% !important;
