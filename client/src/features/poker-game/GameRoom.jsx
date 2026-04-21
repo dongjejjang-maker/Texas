@@ -173,7 +173,7 @@ function GameRoom({ userInfo, setUserInfo }) {
     } catch (e) { }
   };
 
-  const isMyTurn = gameState?.turnNickname === userInfo?.nickname && gameState?.phase !== '대기 중' && !gameState?.phase.includes('종료') && !gameState?.isBlockingAction;
+  const isMyTurn = gameState?.turnNickname === userInfo?.nickname && gameState?.phase !== '대기 중' && !gameState?.phase?.includes('종료') && !gameState?.isBlockingAction;
   const myInfo = gameState?.players?.find(p => p.nickname === userInfo?.nickname);
   const amIDecidingRebuy = myInfo?.decidingRebuy;
 
