@@ -4,4 +4,4 @@ export const SERVER_URL = window.location.origin;
 export const DEFAULT_BUY_IN = 20000;
 export const DEFAULT_SB = 100;
 export const DEFAULT_BB = 200;
-export const MAX_PLAYERS_LIMIT = 6;
+export const MAX_PLAYERS_LIMIT = 8;

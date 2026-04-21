@@ -1036,6 +1036,7 @@ app.use((req, res) => {
     res.sendFile(indexPath);
 });
 
-server.listen(3000, '127.0.0.1', () => { 
-    console.log('정통 홀덤 서버(안정화 롤백 및 3000 포트 복구) 완벽 가동 중! 🚀'); 
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => { 
+    console.log(`정통 홀덤 서버 완벽 가동 중! (Port: ${PORT}) 🚀`); 
 });
