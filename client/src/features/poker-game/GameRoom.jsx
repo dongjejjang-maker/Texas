@@ -407,7 +407,7 @@ function GameRoom({ userInfo, setUserInfo }) {
   const sendChat = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-    socket.emit('chatMessage', { roomId: Number(roomId), nickname: nickname || userInfo?.nickname, message: chatInput });
+    socket.emit('chatMessage', { roomId: Number(roomId), nickname: userInfo?.nickname, message: chatInput });
     setChatInput('');
   };
 
@@ -476,7 +476,7 @@ function GameRoom({ userInfo, setUserInfo }) {
         setBetAnimChips(prev => prev.filter(c => !newAnims.some(n => n.id === c.id)));
       }, 900);
     }
-  }, [gameState?.players?.map(p => p.betAmount).join(','), userInfo?.nickname, gameState?.players]);
+  }, [(gameState?.players || []).map(p => p.betAmount).join(','), userInfo?.nickname, gameState?.players]);
 
   const minRaise = gameState?.currentBet === 0 ? 100 : ((gameState?.currentBet || 0) + 100) - (myInfo?.betAmount || 0);
   const callAmount = (gameState?.currentBet || 0) - (myInfo?.betAmount || 0);
