@@ -99,6 +99,7 @@ function GameRoom({ userInfo, setUserInfo }) {
     return Number(localStorage.getItem('poker_volume') ?? '0.5');
   });
   const volumeRef = useRef(0.5); // 🍏 클로저 방지용 레프
+  const containerRef = useRef(null); // 🍏 테이블 컨테이너 레프 (추가됨)
   useEffect(() => { volumeRef.current = localVolume; }, [localVolume]);
   
   const gameStateRef = useRef(null); // 🍏 리스너 내 최신 상태 참조용
