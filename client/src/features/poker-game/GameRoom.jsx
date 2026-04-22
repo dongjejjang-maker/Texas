@@ -724,12 +724,6 @@ function GameRoom({ userInfo, setUserInfo }) {
                   })}
                 </div>
 
-                {localHandName && gameState.phase !== '대기 중' && !myInfo?.spectator && (
-                  <div className="local-hand-rank-badge animate-bounce-subtle">
-                    <span className="rank-label">나의 족보</span>
-                    <span className="rank-name">{localHandName}</span>
-                  </div>
-                )}
               </div>
             </div>
 
