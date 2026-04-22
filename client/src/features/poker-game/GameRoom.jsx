@@ -67,14 +67,14 @@ const DESKTOP_OFFSETS = [
 ];
 
 const MOBILE_OFFSETS = [
-  { x: 0, y: 375 },       // 0: 6시 (나) - 750px 테이블 높이에 최적화
-  { x: -141, y: 316 },   // 1: 7시 30분
-  { x: -200, y: 0 },     // 2: 9시
-  { x: -141, y: -316 },  // 3: 10시 30분
-  { x: 0, y: -375 },     // 4: 12시
-  { x: 141, y: -316 },   // 5: 1시 30분
-  { x: 200, y: 0 },      // 6: 3시
-  { x: 141, y: 316 },    // 7: 4시 30분
+  { x: 0, y: 350 },       // 0: 6시 (나) - 700px 테이블 높이에 최적화
+  { x: -127, y: 297 },   // 1: 7시 30분
+  { x: -180, y: 0 },     // 2: 9시
+  { x: -127, y: -297 },  // 3: 10시 30분
+  { x: 0, y: -350 },     // 4: 12시
+  { x: 127, y: -297 },   // 5: 1시 30분
+  { x: 180, y: 0 },      // 6: 3시
+  { x: 127, y: 297 },    // 7: 4시 30분
 ];
 
 function GameRoom({ userInfo, setUserInfo }) {
@@ -645,12 +645,12 @@ function GameRoom({ userInfo, setUserInfo }) {
             className="poker-table-border"
             style={{
               position: 'absolute',
-              top: isMobile ? '42%' : '50%', /* 모바일에서 위로 이동 */
-              left: '50%',
+              top: isMobile ? '38%' : '50%',
+              left: isMobile ? '48%' : '50%',
               transform: 'translate(-50%, -50%)',
-              width: isMobile ? '400px' : '710px',
-              height: isMobile ? '750px' : '462px',
-              borderRadius: isMobile ? '180px' : '231px',
+              width: isMobile ? '360px' : '710px',
+              height: isMobile ? '700px' : '462px',
+              borderRadius: isMobile ? '160px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
               boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',

@@ -1577,6 +1577,24 @@ input[type="range"].raise-slider {
   animation: actionFloat 1.8s ease-out forwards, allInPulse 1s infinite !important;
 }
 
+/* 🍏 전체 레이아웃: 삼단 분리 Flexbox (전역 설정) */
+.game-layout-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  background: #0f172a;
+}
+
+/* 중앙 스크롤 영역 (전역 설정) */
+.game-main-area {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* =========================================================
    📱 MOBILE OPTIMIZATION (iPhone 17+ Responsive)
    ========================================================= */
@@ -1585,29 +1603,11 @@ input[type="range"].raise-slider {
    📱 MASSIVE MOBILE OPTIMIZATION (684x1800 Table)
    ========================================================= */
 @media (max-width: 768px) {
-  /* 🍏 전체 레이아웃: 삼단 분리 Flexbox */
-  .game-layout-wrapper {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100vh !important;
-    overflow: hidden !important;
-  }
-
-  /* 중앙 스크롤 영역 */
-  .game-main-area {
-    flex: 1 !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    display: block !important;
-    background: #0f172a;
-    -webkit-overflow-scrolling: touch;
-  }
-  
   .table-area {
-    min-height: 770px; /* 테이블 높이(750) + 최소 여백 */
-    min-width: 420px;
+    min-height: 720px; /* 700px 테이블 + 여백 */
+    min-width: 380px;  /* 360px 테이블 + 여백 */
     position: relative;
-    padding: 10px 0;
+    padding: 5px 0;
   }
 
   /* 아바타 스타일 */
@@ -1634,20 +1634,19 @@ input[type="range"].raise-slider {
     font-size: 12px !important;
   }
 
-  /* 수직형 알약 매트 최적화 (750px 높이 대응) */
+  /* 🍏 초소형 수직형 알약 매트 (360x700 대응) */
   .pill-table {
-    width: 280px !important;
-    height: 620px !important; /* 700에서 620으로 축소 */
-    border-radius: 140px !important;
+    width: 240px !important;
+    height: 580px !important; 
+    border-radius: 120px !important;
     background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important;
-    border: 5px solid rgba(0, 0, 0, 0.4) !important;
-    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6) !important;
+    border: 4px solid rgba(0, 0, 0, 0.4) !important;
   }
   
   /* 모바일 본인 패 위치 */
   .player-cards.is-local-player {
     transform: translateY(-50%) scale(0.75) !important;
-    left: 77% !important; /* 약간 더 우측으로 */
+    left: 77% !important;
   }
 
   /* 초소형 압축 헤더 스타일 */
@@ -1655,10 +1654,6 @@ input[type="range"].raise-slider {
     padding: 2px 10px !important;
   }
   
-  .mobile-compact-header .header-top-row {
-    margin-bottom: 0 !important;
-  }
-
   /* 하단 고정 액션 바 */
   .bottom-action-bar {
     position: relative !important;
