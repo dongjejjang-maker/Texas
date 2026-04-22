@@ -1728,13 +1728,15 @@ input[type="range"].raise-slider {
     font-size: 12px !important;
   }
 
-  /* 🍏 초소형 수직형 알약 매트 (460x670 대응 정밀 보정) */
+  /* 🍏 초소형 수직형 알약 매트 (460x670 대응 중심 동기화) */
   .pill-table {
     width: 390px !important;
     height: 600px !important;
-    border-radius: 120px !important;
+    border-radius: 150px !important; /* 타원형 복구를 위해 곡률 상향 */
     background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important;
     border: 4px solid rgba(0, 0, 0, 0.4) !important;
+    left: 44% !important; /* 테두리와 중심 일치 */
+    top: 20% !important;  /* 테두리와 중심 일치 */
   }
 
   /* 모바일 본인 패 위치 */
