@@ -1678,13 +1678,25 @@ input[type="range"].raise-slider {
   background: #0f172a;
 }
 
-/* 중앙 스크롤 영역 (전역 설정) */
+/* 중앙 스크롤 영역 (전역 설정: Flexbox로 전환하여 고해상도 PC 대응) */
 .game-main-area {
   flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  display: block !important;
   -webkit-overflow-scrolling: touch;
+}
+
+/* 테이블 영역 전역 설정: PC 공간 확보용 */
+.table-area {
+  flex: 1 !important;
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px; /* PC 최소 높이 보장 */
 }
 
 /* =========================================================
