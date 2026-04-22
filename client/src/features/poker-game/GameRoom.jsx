@@ -645,8 +645,8 @@ function GameRoom({ userInfo, setUserInfo }) {
             className="poker-table-border"
             style={{
               position: 'absolute',
-              top: isMobile ? '20%' : '50%',
-              left: isMobile ? '44%' : '50%',
+              top: isMobile ? '30%' : '50%',
+              left: isMobile ? '44%' : '48%',
               transform: 'translate(-50%, -50%)',
               width: isMobile ? '460px' : '710px',
               height: isMobile ? '670px' : '462px',
@@ -656,7 +656,6 @@ function GameRoom({ userInfo, setUserInfo }) {
               boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
               pointerEvents: 'none',
               zIndex: 0,
-              /* 🍏 [물리적 정렬] 매트를 자식으로 받아 정중앙에 고정 */
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center'
@@ -667,7 +666,6 @@ function GameRoom({ userInfo, setUserInfo }) {
                 <div className="table-text">상태: {gameState.phase}</div>
                 <div className="pot-display" style={{ marginTop: '5px', fontSize: '24px', fontWeight: 'bold', color: '#facc15', textShadow: '0 2px 4px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
 
-                  {/* 🍯 [신규] 팟 텍스트 좌측에 칩 컨테이너 배치 */}
                   <div className="pot-chips-container relative-pot-chips" style={{ position: 'relative', width: '40px', height: '40px', left: '0', top: '0', transform: 'none', zIndex: 1 }}>
                     {potChips.map((chip, i) => {
                       const pos = chipPositions[i] || { dx: 0, dy: 0, rot: 0 };
@@ -684,7 +682,7 @@ function GameRoom({ userInfo, setUserInfo }) {
                   POT: <span>{gameState?.pot || 0}</span>
                 </div>
 
-                <div className="community-cards" style={{ display: 'flex', gap: '12px', zIndex: 5, position: 'relative', marginTop: '15px', transform: 'scale(0.7)', transformOrigin: 'center', width: 'max-content', justifyContent: 'center', margin: '15px auto 0' }}>
+                <div className="community-cards" style={{ display: 'flex', gap: '12px', zIndex: 10, position: 'relative', marginTop: '15px', transform: 'scale(0.7)', transformOrigin: 'center', width: 'max-content', justifyContent: 'center', margin: '15px auto 0' }}>
                   {gameState?.communityCards?.map((card, idx) => {
                     const phase = gameState.phase || '';
                     const isEndPhase = phase.includes('쇼다운') || phase.includes('종료');
@@ -714,56 +712,24 @@ function GameRoom({ userInfo, setUserInfo }) {
                     }
 
                     return (
-                      <div key={`pot-${i}-${gameState?.pot}`} className="chip" style={{ '--dx': `${pos.dx / 4}px`, '--dy': `${pos.dy / 4}px`, '--rot': `${pos.rot}deg`, '--wx': winnerTransforms[0]?.wx || '0px', '--wy': winnerTransforms[0]?.wy || '0px', width: '18px', height: '18px', backgroundColor: chip.bg, borderColor: chip.border, ...sweepStyle }} />
+                      <div key={`c-${idx}-${card}`} className="flip-card-container reveal" style={{ '--idx': idx, '--f-delay': fDelay }}>
+                        <div className={innerClassName} style={animationOverride}>
+                          <div className="flip-card-back"></div>
+                          <div className="flip-card-front" style={{ padding: 0, overflow: 'hidden', border: 'none' }}>
+                            <PlayingCard card={card} />
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
 
-                POT: <span>{gameState?.pot || 0}</span>
-              </div>
-
-              <div className="community-cards" style={{ display: 'flex', gap: '12px', zIndex: 5, position: 'static', marginTop: '15px', transform: 'scale(0.7)', transformOrigin: 'center', width: 'max-content' }}>
-                {gameState?.communityCards?.map((card, idx) => {
-                  const phase = gameState.phase || '';
-                  const isEndPhase = phase.includes('쇼다운') || phase.includes('종료');
-                  const preCount = preShowdownCardCountRef.current;
-                  const isNewlyRevealed = isEndPhase && idx >= preCount;
-                  let fDelay = '0s';
-                  let innerClassName = 'flip-card-inner';
-                  let animationOverride = {};
-                  const isAlreadyRevealed = revealedIndicesRef.current.has(idx);
-                  const firstSeenInPhase = revealedPhaseRecordRef.current[idx];
-
-                  if (isNewlyRevealed) {
-                    innerClassName += ' showdown-flip';
-                    revealedIndicesRef.current.add(idx);
-                    revealedPhaseRecordRef.current[idx] = phase; // 단계 기록
-                    if (idx <= 2) fDelay = '0s';
-                    else if (idx === 3) fDelay = '1s';
-                    else if (idx === 4) fDelay = preCount <= 3 ? '2.5s' : '1.5s';
-                  } else if (isAlreadyRevealed && firstSeenInPhase !== phase || isEndPhase && !isNewlyRevealed) {
-                    // 🍏 이번 단계에서 처음 공개된 게 아니라, 이전 단계에서 이미 공개된 경우에만 애니메이션 고정
-                    animationOverride = { animation: 'none !important', transition: 'none !important', transform: 'rotateY(180deg)' };
-                  } else {
-                    innerClassName += ' normal-reveal-anim';
-                    revealedIndicesRef.current.add(idx);
-                    revealedPhaseRecordRef.current[idx] = phase; // 처음 본 단계 기록
-                    // 🍏 플랍(0,1,2)인 경우 0.3초 간격으로 순차 오픈
-                    if (idx < 3) fDelay = `${idx * 0.3}s`;
-                    else fDelay = '0s';
-                  }
-
-                  return (
-                    <div key={`c-${idx}-${card}`} className="flip-card-container reveal" style={{ '--idx': idx, '--f-delay': fDelay }}>
-                      <div className={innerClassName} style={animationOverride}>
-                        <div className="flip-card-back"></div>
-                        <div className="flip-card-front" style={{ padding: 0, overflow: 'hidden', border: 'none' }}>
-                          <PlayingCard card={card} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {localHandName && gameState.phase !== '대기 중' && !myInfo?.spectator && (
+                  <div className="local-hand-rank-badge animate-bounce-subtle">
+                    <span className="rank-label">나의 족보</span>
+                    <span className="rank-name">{localHandName}</span>
+                  </div>
+                )}
               </div>
             </div>
 
