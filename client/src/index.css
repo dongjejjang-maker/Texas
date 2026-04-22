@@ -1767,7 +1767,7 @@ input[type="range"].raise-slider {
   /* 하단 고정 액션 바 */
   .bottom-action-bar {
     position: fixed !important; /* 🍏 화면에 고정된 플로팅 박스로 전환 */
-    bottom: 2% !important; /* 🍏 캡슐 높이만큼 아래로 내림 (기존 8% -> 2%) */
+    bottom: 0.1% !important; /* 🍏 화면 가장 하단에 밀착 (0.1%) */
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: max-content !important; /* 🍏 너비를 버튼에 딱 맞게 축소 */
