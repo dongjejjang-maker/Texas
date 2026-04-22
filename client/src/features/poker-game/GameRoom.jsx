@@ -67,14 +67,14 @@ const DESKTOP_OFFSETS = [
 ];
 
 const MOBILE_OFFSETS = [
-  { x: 0, y: 425 },       // 0: 6시 (나) - 테두리에 정밀 일치
-  { x: -141, y: 366 },   // 1: 7시 30분 - 원호 궤적 일치
-  { x: -200, y: 0 },     // 2: 9시 - 직선 궤적 일치
-  { x: -141, y: -366 },  // 3: 10시 30분 - 원호 궤적 일치
-  { x: 0, y: -425 },     // 4: 12시 - 테두리에 정밀 일치
-  { x: 141, y: -366 },   // 5: 1시 30분
+  { x: 0, y: 375 },       // 0: 6시 (나) - 750px 테이블 높이에 최적화
+  { x: -141, y: 316 },   // 1: 7시 30분
+  { x: -200, y: 0 },     // 2: 9시
+  { x: -141, y: -316 },  // 3: 10시 30분
+  { x: 0, y: -375 },     // 4: 12시
+  { x: 141, y: -316 },   // 5: 1시 30분
   { x: 200, y: 0 },      // 6: 3시
-  { x: 141, y: 366 },    // 7: 4시 30분
+  { x: 141, y: 316 },    // 7: 4시 30분
 ];
 
 function GameRoom({ userInfo, setUserInfo }) {
@@ -583,11 +583,16 @@ function GameRoom({ userInfo, setUserInfo }) {
 
   return (
     <div className="game-layout-wrapper">
-      <div className={`game-header glass-panel ${isMobile ? 'mobile-compact-header' : ''}`} style={{ marginBottom: isMobile ? '0' : '15px', padding: isMobile ? '6px 10px' : '10px 15px' }}>
+      <div className={`game-header glass-panel ${isMobile ? 'mobile-compact-header' : ''}`} style={{ 
+        marginBottom: isMobile ? '0' : '15px', 
+        padding: isMobile ? '6px 10px' : '10px 15px',
+        marginTop: isMobile ? '45px' : '0' /* 아이폰 노치 피하기 (모바일 전용) */
+      }}>
         <div className="header-top-row" style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }} style={{ fontSize: isMobile ? '12px' : '14px' }}>← 나가기</div>
           
           <div className="header-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* PC 환경에서는 진행중 메뉴가 우측이 아닌 중앙에 배치되도록 스타일 조정할 수 있으나, 현재 구조를 유지하며 정렬만 보정 */}
             <button className="settings-gear-btn" onClick={() => setShowSettings(true)} title="방 설정" style={{ fontSize: isMobile ? '16px' : '18px', background: 'none', border: 'none', cursor: 'pointer', padding: isMobile ? '2px' : '5px' }}>
               ⚙️
             </button>
@@ -611,7 +616,13 @@ function GameRoom({ userInfo, setUserInfo }) {
           </div>
         </div>
 
-        <div className="header-title-row" style={{ marginTop: '0', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+        <div className="header-title-row" style={{ 
+          marginTop: '0', 
+          width: '100%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: isMobile ? 'flex-start' : 'center' /* PC 환경 중앙 정렬 복구 */
+        }}>
           <div className="header-title" style={{ fontSize: isMobile ? '0.7rem' : '1rem', color: 'rgba(255,255,255,0.6)' }}>
             {roomTitle} ({gameState.players.length}/8)
           </div>
@@ -638,8 +649,8 @@ function GameRoom({ userInfo, setUserInfo }) {
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: isMobile ? '400px' : '710px',
-              height: isMobile ? '850px' : '462px',
-              borderRadius: isMobile ? '200px' : '231px',
+              height: isMobile ? '750px' : '462px',
+              borderRadius: isMobile ? '180px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
               boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
@@ -848,14 +859,20 @@ function GameRoom({ userInfo, setUserInfo }) {
         </div> {/* game-main-area END */}
 
         <div className={`bottom-action-bar ${isMobile ? 'mobile-two-row-bar' : ''}`}>
-          {/* 🍏 상단층: 리바인, 참여 대기 (조건부 출력) */}
+          {/* 🍏 리바인/참여대기 버튼: 왼쪽 하단(폴드 버튼 상단)으로 재배치 */}
           {(showRebuyBtn || myInfo?.waitingForNext) && (
-            <div className="function-row" style={{ display: 'flex', gap: '10px', marginBottom: '8px', justifyContent: 'center' }}>
+            <div className="function-row" style={{ 
+              display: 'flex', 
+              gap: '6px', 
+              marginBottom: '6px', 
+              justifyContent: isMobile ? 'flex-start' : 'center',
+              paddingLeft: isMobile ? '15px' : '0' 
+            }}>
               {showRebuyBtn && !myInfo?.waitingForNext && (
-                <button className="premium-btn primary-btn active-pulse" style={{ padding: '10px 20px' }} onClick={() => { setShowRebuyBtn(false); socket.emit('spectatorRebuy', { roomId: Number(roomId), nickname: userInfo.nickname }); }}>리바인 하기</button>
+                <button className="premium-btn primary-btn active-pulse rebuy-btn-compact" onClick={() => { setShowRebuyBtn(false); socket.emit('spectatorRebuy', { roomId: Number(roomId), nickname: userInfo.nickname }); }}>리바인</button>
               )}
               {myInfo?.waitingForNext && (
-                <button className="action-btn disabled" style={{ opacity: 0.7, cursor: 'not-allowed', backgroundColor: '#475569' }} disabled>참여 대기 중</button>
+                <button className="action-btn disabled waiting-btn-compact" disabled>중간 참여 대기</button>
               )}
             </div>
           )}

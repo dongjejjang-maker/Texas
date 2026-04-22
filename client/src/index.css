@@ -1604,13 +1604,13 @@ input[type="range"].raise-slider {
   }
   
   .table-area {
-    min-height: 870px;
+    min-height: 770px; /* 테이블 높이(750) + 최소 여백 */
     min-width: 420px;
     position: relative;
-    padding: 15px 0;
+    padding: 10px 0;
   }
 
-  /* 아바타 스타일 복구 */
+  /* 아바타 스타일 */
   .avatar-circle {
     width: 64px !important;
     height: 64px !important;
@@ -1634,35 +1634,34 @@ input[type="range"].raise-slider {
     font-size: 12px !important;
   }
 
-  /* 수직형 알약 매트 복구 */
+  /* 수직형 알약 매트 최적화 (750px 높이 대응) */
   .pill-table {
     width: 280px !important;
-    height: 700px !important;
+    height: 620px !important; /* 700에서 620으로 축소 */
     border-radius: 140px !important;
     background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important;
     border: 5px solid rgba(0, 0, 0, 0.4) !important;
     box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6) !important;
   }
   
+  /* 모바일 본인 패 위치 */
   .player-cards.is-local-player {
     transform: translateY(-50%) scale(0.75) !important;
-    left: 75% !important;
+    left: 77% !important; /* 약간 더 우측으로 */
   }
 
-  /* 초소형 압축 헤더 스타일 복구 */
+  /* 초소형 압축 헤더 스타일 */
   .mobile-compact-header {
-    padding: 4px 10px !important;
-    gap: 0 !important;
+    padding: 2px 10px !important;
   }
   
   .mobile-compact-header .header-top-row {
     margin-bottom: 0 !important;
   }
 
-  /* 하단 고정 액션 바 (스크롤 불필요) */
+  /* 하단 고정 액션 바 */
   .bottom-action-bar {
-    bottom: 0 !important;
-    left: 0 !important;
+    position: relative !important;
     width: 100% !important;
     z-index: 100 !important;
     flex-direction: column !important;
