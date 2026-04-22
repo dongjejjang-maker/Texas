@@ -646,9 +646,9 @@ function GameRoom({ userInfo, setUserInfo }) {
             style={{
               position: 'absolute',
               top: isMobile ? '20%' : '50%',
-              left: isMobile ? '40%' : '50%',
+              left: isMobile ? '44%' : '50%',
               transform: 'translate(-50%, -50%)',
-              width: isMobile ? '400px' : '710px',
+              width: isMobile ? '440px' : '710px',
               height: isMobile ? '670px' : '462px',
               borderRadius: isMobile ? '160px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',

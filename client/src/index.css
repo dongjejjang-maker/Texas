@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Noto+Sans+KR:wght@400;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Noto+Sans+KR:wght@400;700&display=swap');
 
 body {
   margin: 0;
@@ -365,7 +365,8 @@ body {
 }
 
 /* Community Cards (寃뱀묠 諛⑹?瑜??꾪빐 媛꾧꺽 ?뺤옣) */
-.community-cards-row, .community-cards {
+.community-cards-row,
+.community-cards {
   display: flex;
   justify-content: center;
   gap: 12px;
@@ -468,14 +469,14 @@ body {
   color: #facc15;
   font-size: 14px;
   font-weight: 800;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .p-rebuy {
   color: #94a3b8;
   font-size: 11px;
   font-weight: normal;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   padding: 1px 4px;
   border-radius: 3px;
 }
@@ -596,7 +597,8 @@ body {
   transform-origin: left center !important;
   display: flex !important;
   flex-direction: row !important;
-  gap: 0 !important; /* ?대??먯꽌 媛쒕퀎 愿由?*/
+  gap: 0 !important;
+  /* ?대??먯꽌 媛쒕퀎 愿由?*/
   opacity: 1;
 }
 
@@ -612,7 +614,8 @@ body {
   display: flex;
   flex-direction: row;
   gap: -18px;
-  transform: scale(0.7); /* ?뜌 移대뱶留?70%濡?異뺤냼 */
+  transform: scale(0.7);
+  /* ?뜌 移대뱶留?70%濡?異뺤냼 */
   transform-origin: left center;
 }
 
@@ -621,13 +624,15 @@ body {
   color: #facc15;
   padding: 4px 10px;
   border-radius: 6px;
-  font-size: 14px; /* ?뜌 ?먮옒 ?ш린(?ㅼ?) */
+  font-size: 14px;
+  /* ?뜌 ?먮옒 ?ш린(?ㅼ?) */
   font-weight: 900;
   border: 1px solid rgba(250, 204, 21, 0.4);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
   backdrop-filter: blur(2px);
-  margin-top: -10px; /* 移대뱶 異뺤냼濡??명븳 媛꾧꺽 蹂댁젙 */
+  margin-top: -10px;
+  /* 移대뱶 異뺤냼濡??명븳 媛꾧꺽 蹂댁젙 */
 }
 
 .local-hand-rank-box {
@@ -638,7 +643,7 @@ body {
   font-size: 14px;
   font-weight: 900;
   border: 1px solid rgba(250, 204, 21, 0.4);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
   backdrop-filter: blur(2px);
 }
@@ -1221,6 +1226,7 @@ input[type="range"].raise-slider {
   align-items: center;
   gap: 10px;
 }
+
 /* 梨꾪똿 ?ъ씠?쒕컮 ?붿옄???쒓굅 */
 /* ?ъ씠?쒕컮 ?쒓굅 ??硫붿씤 ?곸뿭 ?뺤옣 諛?以묒븰 ?뺣젹 */
 .game-layout-wrapper {
@@ -1243,10 +1249,10 @@ input[type="range"].raise-slider {
   padding: 15px;
   position: relative;
   overflow: hidden;
-/* 紐⑤컮??媛濡????諛??붾㈃ ??醫곸븘吏????덉씠?꾩썐 異뺤냼 */
+  /* 紐⑤컮??媛濡????諛??붾㈃ ??醫곸븘吏????덉씠?꾩썐 異뺤냼 */
 }
 
-    /* ??80% ?ш린濡?異뺤냼 */
+/* ??80% ?ш린濡?異뺤냼 */
 @media (max-width: 850px) {
   .table-area {
     transform: scale(0.8);
@@ -1278,6 +1284,7 @@ input[type="range"].raise-slider {
 .chat-sidebar {
   display: none !important;
 }
+
 /* ?? ???ㅽ뵂 踰꾪듉 ?ㅽ???*/
 .reveal-btn {
   position: absolute;
@@ -1310,9 +1317,22 @@ input[type="range"].raise-slider {
    ?? MOBILE RESPONSIVE OPTIMIZATION (max-width: 768px)
    ========================================================= */
 @media (max-width: 768px) {
-  .game-layout-wrapper { width: 100vw; height: 100vh; padding: 0; }
-  .game-main-area { width: 100%; max-width: none; border-radius: 0; }
-  .pill-table { width: 330px !important; height: 160px !important; }
+  .game-layout-wrapper {
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+  }
+
+  .game-main-area {
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  .pill-table {
+    width: 330px !important;
+    height: 160px !important;
+  }
 }
 
 
@@ -1325,7 +1345,9 @@ input[type="range"].raise-slider {
 }
 
 
-.player-seat.folded .player-cards { display: flex !important; }
+.player-seat.folded .player-cards {
+  display: flex !important;
+}
 
 
 .hand-rank-text {
@@ -1334,7 +1356,7 @@ input[type="range"].raise-slider {
   color: #facc15;
   margin-top: 4px;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 
@@ -1344,7 +1366,8 @@ input[type="range"].raise-slider {
 .card-back-group {
   display: flex !important;
   flex-direction: row !important;
-  gap: -15px !important; /* 30% 寃뱀묠 (?곷?諛?移대뱶 50px 湲곗?) */
+  gap: -15px !important;
+  /* 30% 寃뱀묠 (?곷?諛?移대뱶 50px 湲곗?) */
 }
 
 
@@ -1386,9 +1409,20 @@ input[type="range"].raise-slider {
 }
 
 @keyframes countdownPulse {
-  0% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-  100% { opacity: 0.7; transform: scale(1); }
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
 }
 
 .game-screen-header {
@@ -1400,11 +1434,25 @@ input[type="range"].raise-slider {
 /* ?몣 ?밸━???뺢? ?곗텧 (?꾨컮? ?뺤쨷??怨좎젙) */
 /* ?몣 ?밸━???뺢? ?곗텧 (?꾨컮? ?뺤쨷??怨좎젙) */
 @keyframes crownWobble {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  25% { transform: translate(-50%, calc(-50% - 8px)) rotate(-12deg); }
-  50% { transform: translate(-50%, -50%) rotate(0deg); }
-  75% { transform: translate(-50%, calc(-50% - 8px)) rotate(12deg); }
-  100% { transform: translate(-50%, -50%) rotate(0deg); }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(-50%, calc(-50% - 8px)) rotate(-12deg);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  75% {
+    transform: translate(-50%, calc(-50% - 8px)) rotate(12deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
 }
 
 .winner-crown-badge {
@@ -1418,7 +1466,7 @@ input[type="range"].raise-slider {
   filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9));
   pointer-events: none;
   user-select: none;
-  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .settings-gear-btn {
@@ -1435,6 +1483,7 @@ input[type="range"].raise-slider {
   transition: all 0.3s ease;
   padding: 0;
 }
+
 .settings-gear-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: rotate(45deg);
@@ -1442,7 +1491,10 @@ input[type="range"].raise-slider {
 
 .settings-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   display: flex;
@@ -1465,6 +1517,7 @@ input[type="range"].raise-slider {
   align-items: center;
   margin-bottom: 25px;
 }
+
 .settings-header h3 {
   margin: 0;
   font-size: 20px;
@@ -1475,6 +1528,7 @@ input[type="range"].raise-slider {
 .settings-section {
   margin-bottom: 20px;
 }
+
 .settings-section label {
   display: block;
   font-size: 14px;
@@ -1494,6 +1548,7 @@ input[type="range"].raise-slider {
   align-items: center;
   gap: 12px;
 }
+
 .blind-inputs-row input {
   flex: 1;
   text-align: center;
@@ -1514,16 +1569,42 @@ input[type="range"].raise-slider {
 
 /* ?뿯截??뚮젅?댁뼱 ?≪뀡 留먰뭾??(Action Bubbles) */
 @keyframes actionFloat {
-  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-  15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-  30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.8); opacity: 0; }
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+
+  15% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+
+  30% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.8);
+    opacity: 0;
+  }
 }
 
 @keyframes allInPulse {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); border-color: #facc15; }
-  50% { box-shadow: 0 0 20px 10px rgba(239, 68, 68, 0); border-color: #fb7185; }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: #facc15; }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    border-color: #facc15;
+  }
+
+  50% {
+    box-shadow: 0 0 20px 10px rgba(239, 68, 68, 0);
+    border-color: #fb7185;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    border-color: #facc15;
+  }
 }
 
 .action-bubble {
@@ -1542,27 +1623,38 @@ input[type="range"].raise-slider {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   animation: actionFloat 1.8s ease-out forwards;
   letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* ?≪뀡蹂??뚮쭏 而щ윭 */
 .action-fold {
-  background: rgba(71, 85, 105, 0.9); /* Slate */
+  background: rgba(71, 85, 105, 0.9);
+  /* Slate */
   border-color: #94a3b8;
 }
 
-.action-check, .action-call {
-  background: rgba(5, 150, 105, 0.9); /* Emerald */
+.action-check,
+.action-call {
+  background: rgba(5, 150, 105, 0.9);
+  /* Emerald */
   border-color: #34d399;
 }
 
-.action-bet, .action-raise {
-  background: rgba(217, 119, 6, 0.9); /* Amber */
+.action-bet,
+.action-raise {
+  background: rgba(217, 119, 6, 0.9);
+  /* Amber */
   border-color: #fbbf24;
 }
 
-.action-3bet, .action-4bet, .action-5bet, .action-6bet, .action-7bet, .action-8bet {
-  background: rgba(124, 58, 237, 0.9); /* Purple/Violet */
+.action-3bet,
+.action-4bet,
+.action-5bet,
+.action-6bet,
+.action-7bet,
+.action-8bet {
+  background: rgba(124, 58, 237, 0.9);
+  /* Purple/Violet */
   border-color: #a78bfa;
 }
 
@@ -1573,7 +1665,7 @@ input[type="range"].raise-slider {
   padding: 8px 18px;
   border: 3px solid #facc15 !important;
   color: #fff;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   animation: actionFloat 1.8s ease-out forwards, allInPulse 1s infinite !important;
 }
 
@@ -1604,8 +1696,10 @@ input[type="range"].raise-slider {
    ========================================================= */
 @media (max-width: 768px) {
   .table-area {
-    min-height: 720px; /* 700px 테이블 + 여백 */
-    min-width: 380px;  /* 360px 테이블 + 여백 */
+    min-height: 720px;
+    /* 700px 테이블 + 여백 */
+    min-width: 380px;
+    /* 360px 테이블 + 여백 */
     position: relative;
     padding: 5px 0;
   }
@@ -1615,7 +1709,7 @@ input[type="range"].raise-slider {
     width: 64px !important;
     height: 64px !important;
   }
-  
+
   .avatar-img {
     font-size: 32px !important;
   }
@@ -1636,13 +1730,13 @@ input[type="range"].raise-slider {
 
   /* 🍏 초소형 수직형 알약 매트 (360x700 대응) */
   .pill-table {
-    width: 240px !important;
-    height: 580px !important; 
-    border-radius: 120px !important;
+    width: 350px !important;
+    height: 640px !important;
+    border-radius: 175px !important;
     background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important;
     border: 4px solid rgba(0, 0, 0, 0.4) !important;
   }
-  
+
   /* 모바일 본인 패 위치 */
   .player-cards.is-local-player {
     transform: translateY(-50%) scale(0.75) !important;
@@ -1653,7 +1747,7 @@ input[type="range"].raise-slider {
   .mobile-compact-header {
     padding: 2px 10px !important;
   }
-  
+
   /* 하단 고정 액션 바 */
   .bottom-action-bar {
     position: relative !important;
@@ -1661,7 +1755,8 @@ input[type="range"].raise-slider {
     z-index: 100 !important;
     flex-direction: column !important;
     height: auto !important;
-    padding: 12px 15px 25px 15px !important; /* 하단 세이프 에어리어 고려 */
+    padding: 12px 15px 25px 15px !important;
+    /* 하단 세이프 에어리어 고려 */
     background: rgba(15, 23, 42, 0.98) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.5);
@@ -1703,7 +1798,8 @@ input[type="range"].raise-slider {
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
-  z-index: 1 !important; /* 테이블 위, 아바타 아래 */
+  z-index: 1 !important;
+  /* 테이블 위, 아바타 아래 */
 }
 
 /* 💻 PC 환경 본인 카드 가림 방지 (과감하게 우측으로) */
