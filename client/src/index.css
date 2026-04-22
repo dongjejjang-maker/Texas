@@ -1766,17 +1766,20 @@ input[type="range"].raise-slider {
 
   /* 하단 고정 액션 바 */
   .bottom-action-bar {
-    position: relative !important;
-    width: 100% !important;
+    position: fixed !important; /* 🍏 화면에 고정된 플로팅 박스로 전환 */
+    bottom: 8% !important; /* 🍏 화면 하단에서 8% 띄움 */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: max-content !important; /* 🍏 너비를 버튼에 딱 맞게 축소 */
     z-index: 100 !important;
     flex-direction: column !important;
     height: auto !important;
-    padding: 4px 15px 4px 15px !important; /* 🍏 버튼에 딱 맞게 패딩 최소화 */
-    margin-bottom: 5% !important; /* 🍏 버튼 위치를 5% 위로 올림 */
-    /* 하단 세이프 에어리어 고려 */
-    background: rgba(15, 23, 42, 0.98) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.5);
+    padding: 6px 12px !important; /* 🍏 아주 타이트한 패딩 */
+    border-radius: 40px !important; /* 🍏 둥근 캡슐 형태 */
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+    margin-bottom: 0 !important;
   }
 
   .mobile-two-row-bar {
