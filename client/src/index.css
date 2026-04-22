@@ -1756,7 +1756,7 @@ input[type="range"].raise-slider {
   /* 모바일 본인 패 위치 */
   .player-cards.is-local-player {
     transform: translateY(-50%) scale(1.125) !important; /* 0.75 -> 1.125 (1.5배 확대) */
-    left: 77% !important;
+    left: 85% !important; /* 77% -> 85% (아바타 가림 방지) */
   }
 
   /* 초소형 압축 헤더 스타일 */
@@ -1767,7 +1767,7 @@ input[type="range"].raise-slider {
   /* 하단 고정 액션 바 */
   .bottom-action-bar {
     position: fixed !important; /* 🍏 화면에 고정된 플로팅 박스로 전환 */
-    bottom: 0.1% !important; /* 🍏 화면 가장 하단에 밀착 (0.1%) */
+    bottom: 0px !important; /* 0.1% -> 0px (완전 밀착) */
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: max-content !important; /* 🍏 너비를 버튼에 딱 맞게 축소 */

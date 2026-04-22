@@ -682,7 +682,7 @@ function GameRoom({ userInfo, setUserInfo }) {
                   POT: <span>{gameState?.pot || 0}</span>
                 </div>
 
-                <div className="community-cards" style={{ display: 'flex', gap: '12px', zIndex: 10, position: 'relative', marginTop: '15px', transform: 'scale(0.7)', transformOrigin: 'center', width: 'max-content', justifyContent: 'center', margin: '15px auto 0' }}>
+                <div className="community-cards" style={{ display: 'flex', gap: '12px', zIndex: 10, position: 'relative', marginTop: '15px', transform: isMobile ? 'scale(1.15)' : 'scale(1.4)', transformOrigin: 'center', width: 'max-content', justifyContent: 'center', margin: '15px auto 0' }}>
                   {gameState?.communityCards?.map((card, idx) => {
                     const phase = gameState.phase || '';
                     const isEndPhase = phase.includes('쇼다운') || phase.includes('종료');
@@ -752,7 +752,7 @@ function GameRoom({ userInfo, setUserInfo }) {
 
               if (idx === 0) { // 6시 (나) - 우측 배치 및 70% 축소
                 cardContainerStyle = {
-                  left: '70%',
+                  left: '85%',
                   top: '50%',
                   bottom: 'auto',
                   right: 'auto',
@@ -761,11 +761,11 @@ function GameRoom({ userInfo, setUserInfo }) {
                   alignItems: 'flex-start'
                 };
               } else if (idx === 1 || idx === 2 || idx === 3) {
-                // 7시, 9시, 11시 플레이어 -> 아바타 오른쪽에 패 표시
-                cardContainerStyle = { ...cardContainerStyle, left: '70%', alignItems: 'flex-start' };
+                // 7시, 9시, 11시 플레이어 -> 아바타 오른쪽에 패 표시 (충분한 간격 확보)
+                cardContainerStyle = { ...cardContainerStyle, left: '85%', alignItems: 'flex-start' };
               } else {
-                // 12시, 1시, 3시, 5시 플레이어 -> 아바타 왼쪽에 패 표시
-                cardContainerStyle = { ...cardContainerStyle, right: '70%', alignItems: 'flex-end' };
+                // 12시, 1시, 3시, 5시 플레이어 -> 아바타 왼쪽에 패 표시 (충분한 간격 확보)
+                cardContainerStyle = { ...cardContainerStyle, right: '85%', alignItems: 'flex-end' };
               }
 
               return (
