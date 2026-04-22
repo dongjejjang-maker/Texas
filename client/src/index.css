@@ -1755,7 +1755,7 @@ input[type="range"].raise-slider {
 
   /* 모바일 본인 패 위치 */
   .player-cards.is-local-player {
-    transform: translateY(-50%) scale(0.75) !important;
+    transform: translateY(-50%) scale(1.125) !important; /* 0.75 -> 1.125 (1.5배 확대) */
     left: 77% !important;
   }
 
@@ -1783,10 +1783,11 @@ input[type="range"].raise-slider {
   }
 
   .action-btn {
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-    min-width: 80px !important;
-    height: 42px !important;
+    padding: 10px 15px !important;
+    font-size: 16px !important;
+    min-width: 90px !important;
+    height: 63px !important; /* 42px -> 63px (1.5배 확대) */
+    font-weight: 800 !important;
   }
 
   .function-row .premium-btn {
