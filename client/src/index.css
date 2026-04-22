@@ -1771,7 +1771,8 @@ input[type="range"].raise-slider {
     z-index: 100 !important;
     flex-direction: column !important;
     height: auto !important;
-    padding: 10px 15px 18px 15px !important; /* 🍏 하단 여백 약 10%~20% 압축 */
+    padding: 4px 15px 4px 15px !important; /* 🍏 버튼에 딱 맞게 패딩 최소화 */
+    margin-bottom: 5% !important; /* 🍏 버튼 위치를 5% 위로 올림 */
     /* 하단 세이프 에어리어 고려 */
     background: rgba(15, 23, 42, 0.98) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.1);

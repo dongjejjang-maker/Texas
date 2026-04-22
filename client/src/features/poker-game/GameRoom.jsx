@@ -585,8 +585,8 @@ function GameRoom({ userInfo, setUserInfo }) {
     <div className="game-layout-wrapper">
       <div className={`game-header glass-panel ${isMobile ? 'mobile-compact-header' : ''}`} style={{
         marginBottom: isMobile ? '0' : '15px',
-        padding: isMobile ? '6px 10px' : '10px 15px',
-        marginTop: isMobile ? '22px' : '0' /* 🍏 아이폰 노치 여백 절반으로 축소 */
+        padding: isMobile ? '2px 10px' : '10px 15px',
+        marginTop: isMobile ? '12px' : '0' /* 🍏 여백을 더 극단적으로 줄임 */
       }}>
         <div className="header-top-row" style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }} style={{ fontSize: isMobile ? '12px' : '14px' }}>← 나가기</div>
