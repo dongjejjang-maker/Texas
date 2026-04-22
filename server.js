@@ -422,7 +422,13 @@ io.on('connection', (socket) => {
         if (!gs || gs.isBlockingAction) return;
 
         const player = gs.players[gs.turnIndex];
-        if (!player || player.nickname !== nickname) return;
+        if (!player) {
+            console.error(`⚠️ [ACTION ERROR] Room ${roomId} has invalid turnIndex: ${gs.turnIndex}`);
+            gs.turnIndex = 0; // 강제 복구 시도
+            io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
+            return;
+        }
+        if (player.nickname !== nickname) return;
 
         if (action === '폴드') {
             player.isFold = true;
@@ -634,7 +640,7 @@ function progressGameStage(gs, roomId) {
         gs.turnIndex = gs.players.findIndex(p => p.nickname === pInGame[startIdx].nickname);
         
         let turnProtection = 0;
-        while (gs.players[gs.turnIndex].isFold || gs.players[gs.turnIndex].chips === 0) {
+        while (gs.turnIndex < 0 || !gs.players[gs.turnIndex] || gs.players[gs.turnIndex].isFold || gs.players[gs.turnIndex].chips === 0) {
             gs.turnIndex = (gs.turnIndex + 1) % gs.players.length;
             turnProtection++;
             if (turnProtection > gs.players.length * 2) {
@@ -867,97 +873,116 @@ function resetGame(gs, roomId) {
 
 // 🍏 [핵심] 진짜 게임이 시작되는 통합 엔진
 function initiateNextHand(roomId) {
-    const gs = gameStates[roomId];
-    if (!gs) return;
-
-    // 만약 종료 상태에서 불렸다면 정리부터
-    if (gs.phase.includes('종료') || gs.phase.includes('기권승') || gs.phase === '대기 중') {
-        resetGame(gs, roomId);
-        if (gs.autoStartTimer) {
-            clearTimeout(gs.autoStartTimer);
-            gs.autoStartTimer = null;
+    try {
+        const gs = gameStates[roomId];
+        if (!gs) {
+            console.error(`⚠️ [INIT ERROR] Room ${roomId} has no gameState.`);
+            return;
         }
-    }
 
-    if (gs.isBlockingAction) {
-        console.log(`[ROOM ${roomId}] Game is blocked (e.g. Rebuy decision).`);
-        return;
-    }
-
-    gs.phase = '프리플랍';
-    gs.pot = 0;
-    gs.lastWinners = [];
-    gs.communityCards = [];
-    gs.deck = createDeck();
-    
-    // 🍏 방 설정에서 블라인드 값 참조
-    const sbAmount = gs.settings?.sb || roomsDB.find(r => r.id === roomId).sb;
-    const bbAmount = gs.settings?.bb || roomsDB.find(r => r.id === roomId).bb;
-    
-    gs.currentBet = bbAmount;
-    gs.lastRaiseDifference = gs.currentBet;
-
-    // 접속 끊긴 플레이어 정리
-    gs.players = gs.players.filter(p => p.socketId !== null);
-
-    gs.players.forEach(p => {
-        if (p.waitingForNext) {
-            p.spectator = false;
-            p.isFold = true;
-            p.waitingForNext = false;
+        // 만약 종료 상태에서 불렸다면 정리부터
+        if (gs.phase.includes('종료') || gs.phase.includes('기권승') || gs.phase === '대기 중') {
+            resetGame(gs, roomId);
+            if (gs.autoStartTimer) {
+                clearTimeout(gs.autoStartTimer);
+                gs.autoStartTimer = null;
+            }
         }
-        p.role = ''; p.isFold = false; p.betAmount = 0; p.hasActed = false; p.privateCards = [];
-        p.isRevealed = false; p.totalContribution = 0;
-    });
 
-    gs.streetRaiseCount = 1; // 🍏 프리플랍은 BB(1-bet)이 포함된 상태로 시작
-
-    let playersInGame = gs.players.filter(p => !p.spectator);
-    if (playersInGame.length < 2) {
-        console.log(`[ROOM ${roomId}] Not enough active players after cleanup.`);
-        // 🍏 인원 부족 시 자동진행 해제
-        if (gs.isAutoMode) {
-            gs.isAutoMode = false;
-            io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '🔔 참여 가능한 인원이 부족하여 자동 진행이 해제되었습니다.' });
-        } else {
-            io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '인원이 부족하여 게임을 시작할 수 없습니다 (최소 2명).' });
+        if (gs.isBlockingAction) {
+            console.log(`[ROOM ${roomId}] Game is blocked (e.g. Rebuy decision).`);
+            return;
         }
+
+        gs.phase = '프리플랍';
+        gs.pot = 0;
+        gs.lastWinners = [];
+        gs.communityCards = [];
+        gs.deck = createDeck();
+        
+        // 🍏 방 설정에서 블라인드 값 참조
+        const roomInfo = roomsDB.find(r => r.id === roomId);
+        if (!roomInfo) {
+            console.error(`⚠️ [INIT ERROR] Room ${roomId} info not found.`);
+            return;
+        }
+        const sbAmount = gs.settings?.sb || roomInfo.sb;
+        const bbAmount = gs.settings?.bb || roomInfo.bb;
+        
+        gs.currentBet = bbAmount;
+        gs.lastRaiseDifference = gs.currentBet;
+
+        // 접속 끊긴 플레이어 정리
+        gs.players = gs.players.filter(p => p.socketId !== null);
+
+        gs.players.forEach(p => {
+            if (p.waitingForNext) {
+                p.spectator = false;
+                p.isFold = true;
+                p.waitingForNext = false;
+            }
+            p.role = ''; p.isFold = false; p.betAmount = 0; p.hasActed = false; p.privateCards = [];
+            p.isRevealed = false; p.totalContribution = 0;
+        });
+
+        gs.streetRaiseCount = 1; // 🍏 프리플랍은 BB(1-bet)이 포함된 상태로 시작
+
+        let playersInGame = gs.players.filter(p => !p.spectator);
+        if (playersInGame.length < 2) {
+            console.log(`[ROOM ${roomId}] Not enough active players after cleanup.`);
+            if (gs.isAutoMode) {
+                gs.isAutoMode = false;
+                io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '🔔 참여 가능한 인원이 부족하여 자동 진행이 해제되었습니다.' });
+            } else {
+                io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '인원이 부족하여 게임을 시작할 수 없습니다 (최소 2명).' });
+            }
+            io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
+            return;
+        }
+        gs.dealerIndex = (gs.dealerIndex + 1) % playersInGame.length;
+
+        let dIdx = gs.dealerIndex;
+        let sbIdx = (dIdx + 1) % playersInGame.length;
+        let bbIdx = (dIdx + 2) % playersInGame.length;
+
+        playersInGame[dIdx].role = 'D';
+        playersInGame[sbIdx].role = 'SB';
+        playersInGame[bbIdx].role = 'BB';
+
+        playersInGame[sbIdx].chips -= sbAmount;
+        playersInGame[sbIdx].betAmount = sbAmount;
+        playersInGame[sbIdx].totalContribution = sbAmount;
+        playersInGame[bbIdx].chips -= gs.currentBet;
+        playersInGame[bbIdx].betAmount = gs.currentBet;
+        playersInGame[bbIdx].totalContribution = gs.currentBet;
+
+        gs.pot = sbAmount + gs.currentBet;
+
+        // 🛡️ UTG 플레이어 찾기 시 인덱스 안전장치 추가
+        let utgIdx = (bbIdx + 1) % playersInGame.length;
+        const utgNickname = playersInGame[utgIdx].nickname;
+        gs.turnIndex = gs.players.findIndex(p => p.nickname === utgNickname);
+
+        if (gs.turnIndex === -1) {
+            console.error(`⚠️ [INIT ERROR] Could not find UTG player (${utgNickname}) in players list.`);
+            gs.turnIndex = 0; // 안전한 기본값으로 복구
+        }
+
+        // 카드 배분 및 전송
+        gs.players.forEach(p => {
+            if (!p.spectator) {
+                p.privateCards = [gs.deck.pop(), gs.deck.pop()];
+                io.to(p.socketId).emit('dealPrivateCards', p.privateCards.map(formatCardForUI));
+            }
+        });
+
+        // 방 전체에 상태 동기화 및 게임 시작 메시지 알림
         io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
-        return;
+        io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `===== 게임 시작 (프리플랍) =====` });
+    } catch (err) {
+        console.error(`🔥 [CRITICAL INIT ERROR] Room ${roomId}:`, err);
+        io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '🚫 게임 시작 중 내부 오류가 발생했습니다. 방을 다시 열어주세요.' });
     }
-    gs.dealerIndex = (gs.dealerIndex + 1) % playersInGame.length;
-
-    let dIdx = gs.dealerIndex;
-    let sbIdx = (dIdx + 1) % playersInGame.length;
-    let bbIdx = (dIdx + 2) % playersInGame.length;
-
-    playersInGame[dIdx].role = 'D';
-    playersInGame[sbIdx].role = 'SB';
-    playersInGame[bbIdx].role = 'BB';
-
-    playersInGame[sbIdx].chips -= sbAmount;
-    playersInGame[sbIdx].betAmount = sbAmount;
-    playersInGame[sbIdx].totalContribution = sbAmount;
-    playersInGame[bbIdx].chips -= gs.currentBet;
-    playersInGame[bbIdx].betAmount = gs.currentBet;
-    playersInGame[bbIdx].totalContribution = gs.currentBet;
-
-    gs.pot = sbAmount + gs.currentBet;
-
-    let utgIdx = (bbIdx + 1) % playersInGame.length;
-    gs.turnIndex = gs.players.findIndex(p => p.nickname === playersInGame[utgIdx].nickname);
-
-    // 카드 배분 및 전송
-    gs.players.forEach(p => {
-        if (!p.spectator) {
-            p.privateCards = [gs.deck.pop(), gs.deck.pop()];
-            io.to(p.socketId).emit('dealPrivateCards', p.privateCards.map(formatCardForUI));
-        }
-    });
-
-    // 방 전체에 상태 동기화 및 게임 시작 메시지 알림
-    io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
-    io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `===== 게임 시작 (프리플랍) =====` });
 }
 
 function translateHand(handObj) {
