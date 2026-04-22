@@ -215,6 +215,7 @@ app.post('/api/rooms', (req, res) => {
         currentPlayers: 0 
     };
     roomsDB.push(newRoom);
+    console.log(`[CREATE_ROOM_DEBUG] Created Room ID: ${newRoom.id}, Title: ${title}`);
 
     gameStates[newRoom.id] = {
         roomId: newRoom.id,
@@ -310,14 +311,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinRoom', ({ roomId, nickname }) => {
-        socket.roomId = roomId;
+        const rId = Number(roomId); // 🍏 문자열로 들어오는 roomId를 숫자로 변환 (타입 일치)
+        socket.roomId = rId;
         socket.nickname = nickname;
-        socket.join(`room_${roomId}`);
-        const gs = gameStates[roomId];
-        const roomInfo = roomsDB.find(r => r.id === roomId);
-
+        socket.join(`room_${rId}`);
+        const gs = gameStates[rId];
+        const roomInfo = roomsDB.find(r => r.id === rId);
         let users = loadDB();
         let userDbInfo = users.find(u => u.nickname === nickname);
+
+        console.log(`[JOIN_ROOM_DEBUG] RoomID: ${rId}, Nickname: ${nickname}`);
+        console.log(` - gs exist: ${!!gs}`);
+        console.log(` - roomInfo exist: ${!!roomInfo}`);
+        console.log(` - userDbInfo exist: ${!!userDbInfo}`);
 
         if (gs && roomInfo && userDbInfo) {
             let p = gs.players.find(p => p.nickname === nickname);
@@ -361,6 +367,9 @@ io.on('connection', (socket) => {
                 io.emit('lobbyUpdate', roomsDB);
             }
             io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs, socket.id));
+        } else {
+            // 🍏 방 정보를 찾을 수 없는 경우 (서버 재시작 등) 에러 알림 전송
+            socket.emit('joinRoomError', { message: '방이 존재하지 않거나 만료되었습니다.' });
         }
     });
 

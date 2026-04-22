@@ -25,7 +25,7 @@
     "password": "1",
     "nickname": "1",
     "chips": 0,
-    "rebuyCount": 18
+    "rebuyCount": 0
   },
   {
     "id": "2",
@@ -46,7 +46,7 @@
     "password": "4",
     "nickname": "4",
     "chips": 0,
-    "rebuyCount": 4
+    "rebuyCount": 6
   },
   {
     "id": "5",
