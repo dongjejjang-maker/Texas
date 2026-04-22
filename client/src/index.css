@@ -1705,3 +1705,11 @@ input[type="range"].raise-slider {
   transform: translate(-50%, -50%) !important;
   z-index: 1 !important; /* 테이블 위, 아바타 아래 */
 }
+
+/* 💻 PC 환경 본인 카드 가림 방지 (과감하게 우측으로) */
+@media (min-width: 769px) {
+  .player-cards.is-local-player {
+    left: 92% !important;
+    transform: translateY(-50%) scale(1.1) !important;
+  }
+}
