@@ -586,7 +586,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       <div className={`game-header glass-panel ${isMobile ? 'mobile-compact-header' : ''}`} style={{
         marginBottom: isMobile ? '0' : '15px',
         padding: isMobile ? '6px 10px' : '10px 15px',
-        marginTop: isMobile ? '45px' : '0' /* 아이폰 노치 피하기 (모바일 전용) */
+        marginTop: isMobile ? '22px' : '0' /* 🍏 아이폰 노치 여백 절반으로 축소 */
       }}>
         <div className="header-top-row" style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }} style={{ fontSize: isMobile ? '12px' : '14px' }}>← 나가기</div>
