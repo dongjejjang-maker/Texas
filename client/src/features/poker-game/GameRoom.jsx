@@ -661,10 +661,58 @@ function GameRoom({ userInfo, setUserInfo }) {
               justifyContent: 'center',
               alignItems: 'center'
             }}
-                    const sweepStyle = isGameOver && winnerTransforms.length > 0 ? {
-                      animation: winnerTransforms.map((wt, wi) => `winnerSweep 0.9s ${wi * 0.05}s forwards cubic-bezier(0.8,-0.6,0.2,1.5)`).join(', '),
-                      '--wx': winnerTransforms[0]?.wx, '--wy': winnerTransforms[0]?.wy,
-                    } : { animation: `dropChip 0.3s ease-out ${i * 0.04}s both` };
+          >
+            <div className="pill-table" style={{ pointerEvents: 'auto', position: 'relative' }}>
+              <div className="table-center-info">
+                <div className="table-text">상태: {gameState.phase}</div>
+                <div className="pot-display" style={{ marginTop: '5px', fontSize: '24px', fontWeight: 'bold', color: '#facc15', textShadow: '0 2px 4px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+
+                  {/* 🍯 [신규] 팟 텍스트 좌측에 칩 컨테이너 배치 */}
+                  <div className="pot-chips-container relative-pot-chips" style={{ position: 'relative', width: '40px', height: '40px', left: '0', top: '0', transform: 'none', zIndex: 1 }}>
+                    {potChips.map((chip, i) => {
+                      const pos = chipPositions[i] || { dx: 0, dy: 0, rot: 0 };
+                      const sweepStyle = isGameOver && winnerTransforms.length > 0 ? {
+                        animation: winnerTransforms.map((wt, wi) => `winnerSweep 0.9s ${wi * 0.05}s forwards cubic-bezier(0.8,-0.6,0.2,1.5)`).join(', '),
+                        '--wx': winnerTransforms[0]?.wx, '--wy': winnerTransforms[0]?.wy,
+                      } : { animation: `dropChip 0.3s ease-out ${i * 0.04}s both` };
+                      return (
+                        <div key={`pot-${i}-${gameState?.pot}`} className="chip" style={{ '--dx': `${pos.dx / 4}px`, '--dy': `${pos.dy / 4}px`, '--rot': `${pos.rot}deg`, '--wx': winnerTransforms[0]?.wx || '0px', '--wy': winnerTransforms[0]?.wy || '0px', width: '18px', height: '18px', backgroundColor: chip.bg, borderColor: chip.border, ...sweepStyle }} />
+                      );
+                    })}
+                  </div>
+
+                  POT: <span>{gameState?.pot || 0}</span>
+                </div>
+
+                <div className="community-cards" style={{ display: 'flex', gap: '12px', zIndex: 5, position: 'relative', marginTop: '15px', transform: 'scale(0.7)', transformOrigin: 'center', width: 'max-content', justifyContent: 'center', margin: '15px auto 0' }}>
+                  {gameState?.communityCards?.map((card, idx) => {
+                    const phase = gameState.phase || '';
+                    const isEndPhase = phase.includes('쇼다운') || phase.includes('종료');
+                    const preCount = preShowdownCardCountRef.current;
+                    const isNewlyRevealed = isEndPhase && idx >= preCount;
+                    let fDelay = '0s';
+                    let innerClassName = 'flip-card-inner';
+                    let animationOverride = {};
+                    const isAlreadyRevealed = revealedIndicesRef.current.has(idx);
+                    const firstSeenInPhase = revealedPhaseRecordRef.current[idx];
+
+                    if (isNewlyRevealed) {
+                      innerClassName += ' showdown-flip';
+                      revealedIndicesRef.current.add(idx);
+                      revealedPhaseRecordRef.current[idx] = phase;
+                      if (idx <= 2) fDelay = '0s';
+                      else if (idx === 3) fDelay = '1s';
+                      else if (idx === 4) fDelay = preCount <= 3 ? '2.5s' : '1.5s';
+                    } else if (isAlreadyRevealed && firstSeenInPhase !== phase || isEndPhase && !isNewlyRevealed) {
+                      animationOverride = { animation: 'none !important', transition: 'none !important', transform: 'rotateY(180deg)' };
+                    } else {
+                      innerClassName += ' normal-reveal-anim';
+                      revealedIndicesRef.current.add(idx);
+                      revealedPhaseRecordRef.current[idx] = phase;
+                      if (idx < 3) fDelay = `${idx * 0.3}s`;
+                      else fDelay = '0s';
+                    }
+
                     return (
                       <div key={`pot-${i}-${gameState?.pot}`} className="chip" style={{ '--dx': `${pos.dx / 4}px`, '--dy': `${pos.dy / 4}px`, '--rot': `${pos.rot}deg`, '--wx': winnerTransforms[0]?.wx || '0px', '--wy': winnerTransforms[0]?.wy || '0px', width: '18px', height: '18px', backgroundColor: chip.bg, borderColor: chip.border, ...sweepStyle }} />
                     );
