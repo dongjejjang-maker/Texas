@@ -67,14 +67,14 @@ const DESKTOP_OFFSETS = [
 ];
 
 const MOBILE_OFFSETS = [
-  { x: 0, y: 350 },       // 0: 6시 (나) - 700px 테이블 높이에 최적화
-  { x: -127, y: 297 },   // 1: 7시 30분
-  { x: -180, y: 0 },     // 2: 9시
-  { x: -127, y: -297 },  // 3: 10시 30분
-  { x: 0, y: -350 },     // 4: 12시
-  { x: 127, y: -297 },   // 5: 1시 30분
-  { x: 180, y: 0 },      // 6: 3시
-  { x: 127, y: 297 },    // 7: 4시 30분
+  { x: 0, y: 335 },       // 0: 6시 (나) - 670px 높이에 최적화
+  { x: -189, y: 294 },   // 1: 7시 30분
+  { x: -230, y: 0 },     // 2: 9시
+  { x: -189, y: -294 },  // 3: 10시 30분
+  { x: 0, y: -335 },     // 4: 12시
+  { x: 189, y: -294 },   // 5: 1시 30분
+  { x: 230, y: 0 },      // 6: 3시
+  { x: 189, y: 294 },    // 7: 4시 30분
 ];
 
 function GameRoom({ userInfo, setUserInfo }) {
@@ -648,9 +648,9 @@ function GameRoom({ userInfo, setUserInfo }) {
               top: isMobile ? '20%' : '50%',
               left: isMobile ? '44%' : '50%',
               transform: 'translate(-50%, -50%)',
-              width: isMobile ? '440px' : '710px',
+              width: isMobile ? '460px' : '710px',
               height: isMobile ? '670px' : '462px',
-              borderRadius: isMobile ? '160px' : '231px',
+              borderRadius: isMobile ? '140px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
               boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',

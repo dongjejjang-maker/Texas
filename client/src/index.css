@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Noto+Sans+KR:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Noto+Sans+KR:wght@400;700&display=swap');
 
 body {
   margin: 0;
@@ -1728,11 +1728,11 @@ input[type="range"].raise-slider {
     font-size: 12px !important;
   }
 
-  /* 🍏 초소형 수직형 알약 매트 (360x700 대응) */
+  /* 🍏 초소형 수직형 알약 매트 (460x670 대응 정밀 보정) */
   .pill-table {
-    width: 350px !important;
-    height: 640px !important;
-    border-radius: 175px !important;
+    width: 390px !important;
+    height: 600px !important;
+    border-radius: 120px !important;
     background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important;
     border: 4px solid rgba(0, 0, 0, 0.4) !important;
   }
