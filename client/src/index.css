@@ -1737,6 +1737,7 @@ input[type="range"].raise-slider {
     border: 4px solid rgba(0, 0, 0, 0.4) !important;
     left: 44% !important; /* 테두리와 중심 일치 */
     top: 20% !important;  /* 테두리와 중심 일치 */
+    transform: translate(-50%, -50%) !important; /* 정중앙 정렬 필수 */
   }
 
   /* 모바일 본인 패 위치 */
