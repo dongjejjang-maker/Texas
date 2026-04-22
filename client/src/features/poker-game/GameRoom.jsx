@@ -11,7 +11,7 @@ const TRANSLATE_HAND = (handObj) => {
   if (!handObj || !handObj.name) return "";
   let raw = handObj.name;
   let baseLower = raw.toLowerCase();
-  
+
   let translated = "하이카드";
   if (baseLower.includes("royal flush")) translated = "로티플";
   else if (baseLower.includes("straight flush")) translated = "스티플";
@@ -101,7 +101,7 @@ function GameRoom({ userInfo, setUserInfo }) {
   const volumeRef = useRef(0.5); // 🍏 클로저 방지용 레프
   const containerRef = useRef(null); // 🍏 테이블 컨테이너 레프 (추가됨)
   useEffect(() => { volumeRef.current = localVolume; }, [localVolume]);
-  
+
   const gameStateRef = useRef(null); // 🍏 리스너 내 최신 상태 참조용
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
 
@@ -146,7 +146,7 @@ function GameRoom({ userInfo, setUserInfo }) {
 
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(800 + Math.random() * 200, audioCtx.currentTime + delay);
-        
+
         // 🍏 레프를 사용하여 항상 최상 최신 볼륨 참조
         const vol = volumeRef.current;
         gainNode.gain.setValueAtTime(vol * 0.15, audioCtx.currentTime + delay);
@@ -198,13 +198,13 @@ function GameRoom({ userInfo, setUserInfo }) {
     if (enteringEndPhase) {
       const prevPhase = prevPhaseRef.current;
       if (prevPhase.includes('프리플랍') || prevPhase === '대기 중' || prevPhase === '') {
-        preShowdownCardCountRef.current = 0; 
+        preShowdownCardCountRef.current = 0;
       } else if (prevPhase.includes('플랍')) {
-        preShowdownCardCountRef.current = 3; 
+        preShowdownCardCountRef.current = 3;
       } else if (prevPhase.includes('턴')) {
-        preShowdownCardCountRef.current = 4; 
+        preShowdownCardCountRef.current = 4;
       } else if (prevPhase.includes('리버')) {
-        preShowdownCardCountRef.current = 5; 
+        preShowdownCardCountRef.current = 5;
       } else {
         preShowdownCardCountRef.current = gameState?.communityCards?.length || 0;
       }
@@ -304,17 +304,17 @@ function GameRoom({ userInfo, setUserInfo }) {
       // 액션 플레이어 위치 찾기
       const pIdx = gs.players.findIndex(p => p.nickname === data.nickname);
       const myIdxLocal = gs.players.findIndex(p => p.nickname === userInfo?.nickname);
-      
+
       let relIdx = 0;
       if (pIdx > -1 && myIdxLocal > -1) {
         relIdx = (pIdx - myIdxLocal + gs.players.length) % gs.players.length;
       } else if (pIdx > -1) {
         relIdx = pIdx;
       }
-      
+
       const offset = seatOffsets[Math.min(relIdx, (seatOffsets?.length || 1) - 1)];
       const id = Date.now() + Math.random();
-      
+
       const newBubble = {
         id,
         nickname: data.nickname,
@@ -366,7 +366,7 @@ function GameRoom({ userInfo, setUserInfo }) {
         const solverMyCards = myCards.map(FORMAT_CARD_FOR_SOLVER);
         const solverCommCards = commCards.map(FORMAT_CARD_FOR_SOLVER);
         const allCards = [...solverMyCards, ...solverCommCards];
-        
+
         if (allCards.length >= 5) {
           const solved = Hand.solve(allCards);
           if (solved) setLocalHandName(TRANSLATE_HAND(solved));
@@ -381,7 +381,7 @@ function GameRoom({ userInfo, setUserInfo }) {
         if (r0 === r1) {
           setLocalHandName(`(${cleanR0}) 원페어`);
         } else {
-          const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+          const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
           const topRank = ranks.indexOf(cleanR0) > ranks.indexOf(cleanR1) ? cleanR0 : cleanR1;
           setLocalHandName(`(${topRank}) 하이카드`);
         }
@@ -563,16 +563,16 @@ function GameRoom({ userInfo, setUserInfo }) {
       try {
         const parsed = JSON.parse(localStore);
         localNick = parsed.nickname?.trim() || '';
-      } catch(e) {
-        localNick = String(localStore).trim(); 
+      } catch (e) {
+        localNick = String(localStore).trim();
       }
     }
     const currentLocalNickname = userInfo?.nickname?.trim() || localNick;
     const myIndex = gameState?.players?.findIndex(p => p.nickname?.trim() === currentLocalNickname) ?? -1;
-    
+
     if (myIndex > -1 && gameState?.players) {
       for (let i = 0; i < gameState.players.length; i++) {
-          sortedPlayers.push(gameState.players[(myIndex + i) % gameState.players.length]);
+        sortedPlayers.push(gameState.players[(myIndex + i) % gameState.players.length]);
       }
     } else {
       sortedPlayers.push(...(gameState?.players || []));
@@ -583,23 +583,23 @@ function GameRoom({ userInfo, setUserInfo }) {
 
   return (
     <div className="game-layout-wrapper">
-      <div className={`game-header glass-panel ${isMobile ? 'mobile-compact-header' : ''}`} style={{ 
-        marginBottom: isMobile ? '0' : '15px', 
+      <div className={`game-header glass-panel ${isMobile ? 'mobile-compact-header' : ''}`} style={{
+        marginBottom: isMobile ? '0' : '15px',
         padding: isMobile ? '6px 10px' : '10px 15px',
         marginTop: isMobile ? '45px' : '0' /* 아이폰 노치 피하기 (모바일 전용) */
       }}>
         <div className="header-top-row" style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }} style={{ fontSize: isMobile ? '12px' : '14px' }}>← 나가기</div>
-          
+
           <div className="header-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {/* PC 환경에서는 진행중 메뉴가 우측이 아닌 중앙에 배치되도록 스타일 조정할 수 있으나, 현재 구조를 유지하며 정렬만 보정 */}
             <button className="settings-gear-btn" onClick={() => setShowSettings(true)} title="방 설정" style={{ fontSize: isMobile ? '16px' : '18px', background: 'none', border: 'none', cursor: 'pointer', padding: isMobile ? '2px' : '5px' }}>
               ⚙️
             </button>
-            
+
             {(gameState.phase === '대기 중' || gameState.phase.includes('종료') || gameState.phase.includes('기권승')) ? (
-              <div 
-                className={`header-menu auto-toggle-btn ${gameState.isAutoMode ? 'auto-on' : 'auto-off'}`} 
+              <div
+                className={`header-menu auto-toggle-btn ${gameState.isAutoMode ? 'auto-on' : 'auto-off'}`}
                 onClick={() => socket.emit('toggleAutoMode', { roomId: Number(roomId) })}
                 style={{ position: 'relative', minWidth: isMobile ? '90px' : '120px', padding: isMobile ? '4px 8px' : '8px 15px' }}
               >
@@ -616,11 +616,11 @@ function GameRoom({ userInfo, setUserInfo }) {
           </div>
         </div>
 
-        <div className="header-title-row" style={{ 
-          marginTop: '0', 
-          width: '100%', 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div className="header-title-row" style={{
+          marginTop: '0',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: isMobile ? 'flex-start' : 'center' /* PC 환경 중앙 정렬 복구 */
         }}>
           <div className="header-title" style={{ fontSize: isMobile ? '0.7rem' : '1rem', color: 'rgba(255,255,255,0.6)' }}>
@@ -640,16 +640,16 @@ function GameRoom({ userInfo, setUserInfo }) {
         </div>
 
         <div className="table-area">
-          <div 
+          <div
             ref={containerRef}
             className="poker-table-border"
             style={{
               position: 'absolute',
-              top: isMobile ? '38%' : '50%',
-              left: isMobile ? '48%' : '50%',
+              top: isMobile ? '20%' : '50%',
+              left: isMobile ? '40%' : '50%',
               transform: 'translate(-50%, -50%)',
-              width: isMobile ? '360px' : '710px',
-              height: isMobile ? '700px' : '462px',
+              width: isMobile ? '400px' : '710px',
+              height: isMobile ? '670px' : '462px',
               borderRadius: isMobile ? '160px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
@@ -663,7 +663,7 @@ function GameRoom({ userInfo, setUserInfo }) {
             <div className="table-center-info">
               <div className="table-text">상태: {gameState.phase}</div>
               <div className="pot-display" style={{ marginTop: '5px', fontSize: '24px', fontWeight: 'bold', color: '#facc15', textShadow: '0 2px 4px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                
+
                 {/* 🍯 [신규] 팟 텍스트 좌측에 칩 컨테이너 배치 */}
                 <div className="pot-chips-container relative-pot-chips" style={{ position: 'relative', width: '40px', height: '40px', left: '0', top: '0', transform: 'none', zIndex: 1 }}>
                   {potChips.map((chip, i) => {
@@ -677,7 +677,7 @@ function GameRoom({ userInfo, setUserInfo }) {
                     );
                   })}
                 </div>
-                
+
                 POT: <span>{gameState?.pot || 0}</span>
               </div>
 
@@ -735,31 +735,31 @@ function GameRoom({ userInfo, setUserInfo }) {
             {sortedPlayers.map((player, idx) => {
               // 🍏 [신규] 8인용 통합 좌표 레이아웃 엔진 적용
               const offset = seatOffsets[Math.min(idx, seatOffsets.length - 1)] || seatOffsets[0];
-              
+
               const isMe = (player.nickname === userInfo?.nickname);
               const isActiveTurn = (gameState.turnNickname === player.nickname && !gameState.phase.includes('종료') && !gameState.isBlockingAction);
 
               // 각 좌석 인덱스별로 카드가 아바타를 가리지 않도록 좌/우 배치 분기
-              let cardContainerStyle = { 
-                position: 'absolute', 
-                top: '50%', 
-                bottom: 'auto', 
-                right: 'auto', 
+              let cardContainerStyle = {
+                position: 'absolute',
+                top: '50%',
+                bottom: 'auto',
+                right: 'auto',
                 left: 'auto',
-                transform: 'translateY(-50%)' 
+                transform: 'translateY(-50%)'
               };
-              
+
               if (idx === 0) { // 6시 (나) - 우측 배치 및 70% 축소
-                cardContainerStyle = { 
-                  left: '70%', 
-                  top: '50%', 
-                  bottom: 'auto', 
-                  right: 'auto', 
-                  transform: 'translateY(-50%) scale(0.7)', 
+                cardContainerStyle = {
+                  left: '70%',
+                  top: '50%',
+                  bottom: 'auto',
+                  right: 'auto',
+                  transform: 'translateY(-50%) scale(0.7)',
                   transformOrigin: 'left center',
-                  alignItems: 'flex-start' 
+                  alignItems: 'flex-start'
                 };
-              } else if (idx === 1 || idx === 2 || idx === 3) { 
+              } else if (idx === 1 || idx === 2 || idx === 3) {
                 // 7시, 9시, 11시 플레이어 -> 아바타 오른쪽에 패 표시
                 cardContainerStyle = { ...cardContainerStyle, left: '70%', alignItems: 'flex-start' };
               } else {
@@ -768,8 +768,8 @@ function GameRoom({ userInfo, setUserInfo }) {
               }
 
               return (
-                <div 
-                  className={`player-seat ${player.isFold ? 'folded' : ''}`} 
+                <div
+                  className={`player-seat ${player.isFold ? 'folded' : ''}`}
                   key={player.nickname}
                   style={{ transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))` }}
                 >
@@ -788,18 +788,18 @@ function GameRoom({ userInfo, setUserInfo }) {
                       <span className="p-rebuy">(R:{player.rebuyCount || 0})</span>
                     </div>
                   </div>
-                  
+
                   {/* 본인이거나 폴드하지 않았거나 쇼다운인 경우 카드 영역 표시 */}
                   {((isMe || !player.isFold) || gameState.phase === '쇼다운' || gameState.phase.includes('종료')) && !player.spectator && gameState.phase !== '대기 중' && (
-                    <div 
-                      className={`player-cards ${player.isFold ? 'folded-cards' : ''} ${isMe ? 'is-local-player' : ''}`} 
+                    <div
+                      className={`player-cards ${player.isFold ? 'folded-cards' : ''} ${isMe ? 'is-local-player' : ''}`}
                       style={isMe ? { opacity: player.isFold ? 0.6 : 1 } : cardContainerStyle}
                     >
                       {/* 내 패 공개 버튼 */}
                       {isMe && !player.isRevealed && (gameState.phase === '쇼다운' || gameState.phase.includes('종료')) && (
                         <button className="reveal-btn animate-fade-in" onClick={() => socket.emit('revealCards', { roomId: Number(gameState.roomId || roomId), nickname: player.nickname })}>🔓 OPEN</button>
                       )}
-                      
+
                       {/* 카드 렌더링 (내 카드 우선) */}
                       {isMe && myCards && myCards.length > 0 ? (
                         <>
@@ -840,11 +840,11 @@ function GameRoom({ userInfo, setUserInfo }) {
             })}
             {/* 🍏 액션 말풍선 렌더링 섹션 */}
             {actionBubbles.map(b => (
-              <div 
-                key={b.id} 
+              <div
+                key={b.id}
                 className={`action-bubble ${b.action === '올인' ? 'bubble-allin' : ''} action-${b.label.toLowerCase().replace('-bet', 'bet')}`}
-                style={{ 
-                  left: `calc(50% + ${b.x}px)`, 
+                style={{
+                  left: `calc(50% + ${b.x}px)`,
                   top: `calc(50% + ${b.y}px)`,
                   '--tx': `${-b.x * 0.4}px`,
                   '--ty': `${-b.y * 0.4}px`
@@ -856,167 +856,167 @@ function GameRoom({ userInfo, setUserInfo }) {
           </div>
         </div>
 
-        </div> {/* game-main-area END */}
+      </div> {/* game-main-area END */}
 
-        <div className={`bottom-action-bar ${isMobile ? 'mobile-two-row-bar' : ''}`}>
-          {/* 🍏 리바인/참여대기 버튼: 왼쪽 하단(폴드 버튼 상단)으로 재배치 */}
-          {(showRebuyBtn || myInfo?.waitingForNext) && (
-            <div className="function-row" style={{ 
-              display: 'flex', 
-              gap: '6px', 
-              marginBottom: '6px', 
-              justifyContent: isMobile ? 'flex-start' : 'center',
-              paddingLeft: isMobile ? '15px' : '0' 
-            }}>
-              {showRebuyBtn && !myInfo?.waitingForNext && (
-                <button className="premium-btn primary-btn active-pulse rebuy-btn-compact" onClick={() => { setShowRebuyBtn(false); socket.emit('spectatorRebuy', { roomId: Number(roomId), nickname: userInfo.nickname }); }}>리바인</button>
-              )}
-              {myInfo?.waitingForNext && (
-                <button className="action-btn disabled waiting-btn-compact" disabled>중간 참여 대기</button>
-              )}
-            </div>
-          )}
-          
-          {/* 🍏 하단층: 폴드, 콜, 레이즈 고정 배치 */}
-          <div className="action-row" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-            <button className={`action-btn fold ${!isMyTurn ? 'disabled' : ''}`} disabled={!isMyTurn} onClick={() => handleAction('폴드')}>폴드</button>
-            <button className={`action-btn call ${!isMyTurn ? 'disabled' : ''}`} disabled={!isMyTurn} onClick={() => handleAction('콜')}>{callText}</button>
-            <button className={`action-btn raise ${(!isMyTurn || isAllInCall) ? 'disabled' : ''}`} disabled={!isMyTurn || isAllInCall} onClick={() => { setRaiseAmount(Math.min(minRaise, myInfo?.chips || 0)); setShowRaisePanel(true); }}>레이즈</button>
-          </div>
-        </div>
-
-        {(gameState.isBlockingAction || amIDecidingRebuy) && (
-          <div className="blocking-overlay">
-            {amIDecidingRebuy ? (
-              <div className={`rebuy-box glass-panel ${gameState?.phase?.includes('종료') ? 'delayed-popup' : ''}`}>
-                <h3>칩이 모두 소진되었습니다!</h3>
-                <p>다시 칩을 구매(리바인)하여 계속하시겠습니까?</p>
-                <button className="premium-btn success-btn" onClick={(e) => { if (popupLockRef.current) return; popupLockRef.current = true; e.currentTarget.disabled = true; e.currentTarget.innerText = "처리 중..."; handleRebuy('yes'); }}>예 (리바인)</button>
-                <button className="premium-btn secondary-btn" onClick={(e) => { if (popupLockRef.current) return; popupLockRef.current = true; e.currentTarget.disabled = true; e.currentTarget.innerText = "처리 중..."; handleRebuy('no'); }} style={{ marginLeft: '10px' }}>관전 모드 전환</button>
-              </div>
-            ) : (
-              <div className={`rebuy-box glass-panel ${gameState?.phase?.includes('종료') ? 'delayed-popup' : ''}`}>
-                <p>잠시만 기다려주세요, 누군가 리바인 여부를 결정 중입니다...</p>
-              </div>
+      <div className={`bottom-action-bar ${isMobile ? 'mobile-two-row-bar' : ''}`}>
+        {/* 🍏 리바인/참여대기 버튼: 왼쪽 하단(폴드 버튼 상단)으로 재배치 */}
+        {(showRebuyBtn || myInfo?.waitingForNext) && (
+          <div className="function-row" style={{
+            display: 'flex',
+            gap: '6px',
+            marginBottom: '6px',
+            justifyContent: isMobile ? 'flex-start' : 'center',
+            paddingLeft: isMobile ? '15px' : '0'
+          }}>
+            {showRebuyBtn && !myInfo?.waitingForNext && (
+              <button className="premium-btn primary-btn active-pulse rebuy-btn-compact" onClick={() => { setShowRebuyBtn(false); socket.emit('spectatorRebuy', { roomId: Number(roomId), nickname: userInfo.nickname }); }}>리바인</button>
+            )}
+            {myInfo?.waitingForNext && (
+              <button className="action-btn disabled waiting-btn-compact" disabled>중간 참여 대기</button>
             )}
           </div>
         )}
 
-        {showRaisePanel && (
-          <div className="raise-panel-modal">
-            <div className="raise-box glass-panel" style={{ width: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <h4 style={{ margin: '0' }}>레이즈 금액 설정</h4>
-              <div className="raise-amount-display" style={{ margin: '15px 0', fontSize: '24px', color: '#facc15', fontWeight: 'bold' }}>{raiseAmount}</div>
-              <div style={{ display: 'flex', width: '100%', justifyContent: 'space-around', alignItems: 'center', height: '180px' }}>
-                <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
-                  <input type="range" className="raise-slider" style={{ WebkitAppearance: 'slider-vertical', writingMode: 'bt-lr', height: '150px', cursor: 'grab' }} min={Math.min(minRaise, myInfo?.chips || 0)} max={myInfo?.chips || 1000} step="100" value={raiseAmount} onChange={(e) => setRaiseAmount(Number(e.target.value))} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[1000, 500, 100].map(amt => (
-                    <div key={amt} style={{ display: 'flex', gap: '6px' }}>
-                      <button className="premium-btn danger-btn" style={{ padding: '8px 12px', fontSize: '13px', flex: 1 }} onClick={() => setRaiseAmount(prev => Math.max(Math.min(minRaise, myInfo?.chips || 0), prev - amt))}>-{amt}</button>
-                      <button className="premium-btn" style={{ padding: '8px 12px', fontSize: '13px', flex: 1 }} onClick={() => setRaiseAmount(prev => Math.min(myInfo?.chips || 0, prev + amt))}>+{amt}</button>
-                    </div>
-                  ))}
-                  <button className="premium-btn" style={{ padding: '8px 12px', fontSize: '13px', backgroundColor: '#eab308', color: '#000', fontWeight: 'bold', textShadow: 'none', marginTop: '4px' }} onClick={() => setRaiseAmount(myInfo?.chips || 0)}>최대 (올인)</button>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '20px', width: '100%', justifyContent: 'center' }}>
-                <button className="premium-btn danger-btn" onClick={() => setShowRaisePanel(false)}>취소</button>
-                <button className={`premium-btn ${raiseAmount === myInfo?.chips ? '' : 'primary-btn active-pulse'}`} style={raiseAmount === myInfo?.chips ? { backgroundColor: '#ef4444', color: '#fff', fontWeight: 'bold', animation: 'pulse 1.5s infinite' } : {}} onClick={() => { handleAction(raiseAmount === myInfo?.chips ? '올인' : '레이즈', raiseAmount); setShowRaisePanel(false); }}>{raiseAmount === myInfo?.chips ? '올인 확정' : '레이즈 확정'}</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* 🍏 하단층: 폴드, 콜, 레이즈 고정 배치 */}
+        <div className="action-row" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+          <button className={`action-btn fold ${!isMyTurn ? 'disabled' : ''}`} disabled={!isMyTurn} onClick={() => handleAction('폴드')}>폴드</button>
+          <button className={`action-btn call ${!isMyTurn ? 'disabled' : ''}`} disabled={!isMyTurn} onClick={() => handleAction('콜')}>{callText}</button>
+          <button className={`action-btn raise ${(!isMyTurn || isAllInCall) ? 'disabled' : ''}`} disabled={!isMyTurn || isAllInCall} onClick={() => { setRaiseAmount(Math.min(minRaise, myInfo?.chips || 0)); setShowRaisePanel(true); }}>레이즈</button>
+        </div>
+      </div>
 
-        {showChatModal && (
-          <div className="chat-modal-overlay" onClick={() => setShowChatModal(false)}>
-            <div className="chat-modal-content glass-panel animate-fade-in" onClick={e => e.stopPropagation()}>
-              <div className="chat-modal-header"><div className="chat-modal-title">💬 실시간 채팅</div><button className="premium-btn danger-btn" style={{ padding: '5px 12px' }} onClick={() => setShowChatModal(false)}>닫기</button></div>
-              <div className="chat-log-box" style={{ flex: 1, padding: '15px' }}>
-                {chatLogs.map((log, idx) => (
-                  <div key={idx} className={`chat-line ${log.sender === '시스템' ? 'sys' : ''}`}>
-                    {log.sender === '시스템' ? <span>{log.text}</span> : <span><b>{log.sender}:</b> {log.text}</span>}
+      {(gameState.isBlockingAction || amIDecidingRebuy) && (
+        <div className="blocking-overlay">
+          {amIDecidingRebuy ? (
+            <div className={`rebuy-box glass-panel ${gameState?.phase?.includes('종료') ? 'delayed-popup' : ''}`}>
+              <h3>칩이 모두 소진되었습니다!</h3>
+              <p>다시 칩을 구매(리바인)하여 계속하시겠습니까?</p>
+              <button className="premium-btn success-btn" onClick={(e) => { if (popupLockRef.current) return; popupLockRef.current = true; e.currentTarget.disabled = true; e.currentTarget.innerText = "처리 중..."; handleRebuy('yes'); }}>예 (리바인)</button>
+              <button className="premium-btn secondary-btn" onClick={(e) => { if (popupLockRef.current) return; popupLockRef.current = true; e.currentTarget.disabled = true; e.currentTarget.innerText = "처리 중..."; handleRebuy('no'); }} style={{ marginLeft: '10px' }}>관전 모드 전환</button>
+            </div>
+          ) : (
+            <div className={`rebuy-box glass-panel ${gameState?.phase?.includes('종료') ? 'delayed-popup' : ''}`}>
+              <p>잠시만 기다려주세요, 누군가 리바인 여부를 결정 중입니다...</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showRaisePanel && (
+        <div className="raise-panel-modal">
+          <div className="raise-box glass-panel" style={{ width: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h4 style={{ margin: '0' }}>레이즈 금액 설정</h4>
+            <div className="raise-amount-display" style={{ margin: '15px 0', fontSize: '24px', color: '#facc15', fontWeight: 'bold' }}>{raiseAmount}</div>
+            <div style={{ display: 'flex', width: '100%', justifyContent: 'space-around', alignItems: 'center', height: '180px' }}>
+              <div style={{ display: 'flex', height: '100%', alignItems: 'center' }}>
+                <input type="range" className="raise-slider" style={{ WebkitAppearance: 'slider-vertical', writingMode: 'bt-lr', height: '150px', cursor: 'grab' }} min={Math.min(minRaise, myInfo?.chips || 0)} max={myInfo?.chips || 1000} step="100" value={raiseAmount} onChange={(e) => setRaiseAmount(Number(e.target.value))} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[1000, 500, 100].map(amt => (
+                  <div key={amt} style={{ display: 'flex', gap: '6px' }}>
+                    <button className="premium-btn danger-btn" style={{ padding: '8px 12px', fontSize: '13px', flex: 1 }} onClick={() => setRaiseAmount(prev => Math.max(Math.min(minRaise, myInfo?.chips || 0), prev - amt))}>-{amt}</button>
+                    <button className="premium-btn" style={{ padding: '8px 12px', fontSize: '13px', flex: 1 }} onClick={() => setRaiseAmount(prev => Math.min(myInfo?.chips || 0, prev + amt))}>+{amt}</button>
                   </div>
                 ))}
-                <div ref={chatEndRef} />
-              </div>
-              <form onSubmit={sendChat} className="chat-input-form" style={{ padding: '15px' }}>
-                <input type="text" className="premium-input chat-input" value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="메시지 입력..." autoFocus />
-                <button type="submit" className="premium-btn primary-btn chat-send-btn">전송</button>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ⚙️ 방 설정 모달 */}
-        {showSettings && (
-          <div className="settings-overlay" onClick={() => setShowSettings(false)}>
-            <div className="settings-modal glass-panel animate-fade-in" onClick={e => e.stopPropagation()}>
-              <div className="settings-header">
-                <h3>⚙️ 방 옵션 설정</h3>
-                <button className="premium-btn danger-btn" onClick={() => setShowSettings(false)}>×</button>
-              </div>
-              
-              <div className="settings-body">
-                <section className="settings-section">
-                  <label>🔊 효과음 볼륨 ({Math.round(localVolume * 100)}%)</label>
-                  <input 
-                    type="range" min="0" max="1" step="0.01" 
-                    value={localVolume} 
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value);
-                      setLocalVolume(v);
-                      volumeRef.current = v;
-                      localStorage.setItem('poker_volume', v);
-                    }} 
-                  />
-                </section>
-
-                <div className="settings-divider" />
-
-                <section className="settings-section">
-                  <label>⏱️ 자동 시작 대기 시간 ({ (tempSettings.autoStartDelay || 5000) / 1000 }초)</label>
-                  <input 
-                    type="range" min="3000" max="15000" step="1000" 
-                    value={tempSettings.autoStartDelay} 
-                    onChange={(e) => updateSettings({ autoStartDelay: Number(e.target.value) })} 
-                  />
-                  <small style={{ color: '#94a3b8', fontSize: '11px', marginTop: '4px', display: 'block' }}>
-                    * 쇼다운 시 카드 공개를 위해 3초가 추가로 대기됩니다.
-                  </small>
-                </section>
-
-                <div className="settings-divider" />
-
-                <section className="settings-section">
-                  <label>💰 블라인드 설정 (SB / BB)</label>
-                  <div className="blind-inputs-row">
-                    <input 
-                      type="number" className="premium-input" placeholder="SB" 
-                      value={tempSettings.sb} 
-                      onChange={(e) => updateSettings({ sb: Number(e.target.value) })} 
-                    />
-                    <span style={{ color: '#94a3b8' }}>/</span>
-                    <input 
-                      type="number" className="premium-input" placeholder="BB" 
-                      value={tempSettings.bb} 
-                      onChange={(e) => updateSettings({ bb: Number(e.target.value) })} 
-                    />
-                  </div>
-                </section>
-              </div>
-
-              <div className="settings-footer">
-                <button className="premium-btn primary-btn" style={{ width: '100%' }} onClick={() => setShowSettings(false)}>
-                  설정 완료
-                </button>
+                <button className="premium-btn" style={{ padding: '8px 12px', fontSize: '13px', backgroundColor: '#eab308', color: '#000', fontWeight: 'bold', textShadow: 'none', marginTop: '4px' }} onClick={() => setRaiseAmount(myInfo?.chips || 0)}>최대 (올인)</button>
               </div>
             </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px', width: '100%', justifyContent: 'center' }}>
+              <button className="premium-btn danger-btn" onClick={() => setShowRaisePanel(false)}>취소</button>
+              <button className={`premium-btn ${raiseAmount === myInfo?.chips ? '' : 'primary-btn active-pulse'}`} style={raiseAmount === myInfo?.chips ? { backgroundColor: '#ef4444', color: '#fff', fontWeight: 'bold', animation: 'pulse 1.5s infinite' } : {}} onClick={() => { handleAction(raiseAmount === myInfo?.chips ? '올인' : '레이즈', raiseAmount); setShowRaisePanel(false); }}>{raiseAmount === myInfo?.chips ? '올인 확정' : '레이즈 확정'}</button>
+            </div>
           </div>
-        )}
-      </div>
-    );
-  }
+        </div>
+      )}
+
+      {showChatModal && (
+        <div className="chat-modal-overlay" onClick={() => setShowChatModal(false)}>
+          <div className="chat-modal-content glass-panel animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="chat-modal-header"><div className="chat-modal-title">💬 실시간 채팅</div><button className="premium-btn danger-btn" style={{ padding: '5px 12px' }} onClick={() => setShowChatModal(false)}>닫기</button></div>
+            <div className="chat-log-box" style={{ flex: 1, padding: '15px' }}>
+              {chatLogs.map((log, idx) => (
+                <div key={idx} className={`chat-line ${log.sender === '시스템' ? 'sys' : ''}`}>
+                  {log.sender === '시스템' ? <span>{log.text}</span> : <span><b>{log.sender}:</b> {log.text}</span>}
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+            <form onSubmit={sendChat} className="chat-input-form" style={{ padding: '15px' }}>
+              <input type="text" className="premium-input chat-input" value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="메시지 입력..." autoFocus />
+              <button type="submit" className="premium-btn primary-btn chat-send-btn">전송</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ⚙️ 방 설정 모달 */}
+      {showSettings && (
+        <div className="settings-overlay" onClick={() => setShowSettings(false)}>
+          <div className="settings-modal glass-panel animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="settings-header">
+              <h3>⚙️ 방 옵션 설정</h3>
+              <button className="premium-btn danger-btn" onClick={() => setShowSettings(false)}>×</button>
+            </div>
+
+            <div className="settings-body">
+              <section className="settings-section">
+                <label>🔊 효과음 볼륨 ({Math.round(localVolume * 100)}%)</label>
+                <input
+                  type="range" min="0" max="1" step="0.01"
+                  value={localVolume}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setLocalVolume(v);
+                    volumeRef.current = v;
+                    localStorage.setItem('poker_volume', v);
+                  }}
+                />
+              </section>
+
+              <div className="settings-divider" />
+
+              <section className="settings-section">
+                <label>⏱️ 자동 시작 대기 시간 ({(tempSettings.autoStartDelay || 5000) / 1000}초)</label>
+                <input
+                  type="range" min="3000" max="15000" step="1000"
+                  value={tempSettings.autoStartDelay}
+                  onChange={(e) => updateSettings({ autoStartDelay: Number(e.target.value) })}
+                />
+                <small style={{ color: '#94a3b8', fontSize: '11px', marginTop: '4px', display: 'block' }}>
+                  * 쇼다운 시 카드 공개를 위해 3초가 추가로 대기됩니다.
+                </small>
+              </section>
+
+              <div className="settings-divider" />
+
+              <section className="settings-section">
+                <label>💰 블라인드 설정 (SB / BB)</label>
+                <div className="blind-inputs-row">
+                  <input
+                    type="number" className="premium-input" placeholder="SB"
+                    value={tempSettings.sb}
+                    onChange={(e) => updateSettings({ sb: Number(e.target.value) })}
+                  />
+                  <span style={{ color: '#94a3b8' }}>/</span>
+                  <input
+                    type="number" className="premium-input" placeholder="BB"
+                    value={tempSettings.bb}
+                    onChange={(e) => updateSettings({ bb: Number(e.target.value) })}
+                  />
+                </div>
+              </section>
+            </div>
+
+            <div className="settings-footer">
+              <button className="premium-btn primary-btn" style={{ width: '100%' }} onClick={() => setShowSettings(false)}>
+                설정 완료
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default GameRoom;
