@@ -136,6 +136,11 @@ function GameRoom({ userInfo, setUserInfo }) {
   const revealedPhaseRecordRef = useRef({}); // 🍏 각 카드가 처음 공개된 단계를 기록
   const autoStartIntervalRef = useRef(null); // 🍏 자동 시작 타이머 레프
   const chatEndRef = useRef(null);
+  const showChatModalRef = useRef(false); // 🍏 의존성 방지용 Ref
+
+  useEffect(() => {
+    showChatModalRef.current = showChatModal;
+  }, [showChatModal]);
 
   const playChipSound = useCallback((count = 1) => {
     try {
@@ -278,7 +283,7 @@ function GameRoom({ userInfo, setUserInfo }) {
 
     const handleChatMessage = (data) => {
       setChatLogs(prev => [...prev.slice(-49), data]);
-      if (!showChatModal) setHasNewMessage(true);
+      if (!showChatModalRef.current) setHasNewMessage(true);
 
       if (data.sender === '시스템') {
         const now = Date.now();
@@ -349,7 +354,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       socket.off('playerActionNotification', handlePlayerActionNotification);
       socket.off('joinRoomError', handleJoinRoomError);
     };
-  }, [roomId, userInfo, setUserInfo, showChatModal]);
+  }, [roomId, userInfo?.nickname]);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatLogs]);
 
