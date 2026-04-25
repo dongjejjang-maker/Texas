@@ -25,6 +25,14 @@ function App() {
     }
   }, [userInfo]);
 
+  // 🍏 [Heartbeat] Render 서버 잠자기 방지 (5분마다 핑)
+  useEffect(() => {
+    const keepAlive = setInterval(() => {
+      fetch('/api/ping').catch(() => {});
+    }, 1000 * 60 * 5); // 5분
+    return () => clearInterval(keepAlive);
+  }, []);
+
   return (
     <div className="app-wrapper">
       <BrowserRouter>

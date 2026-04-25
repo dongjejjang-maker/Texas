@@ -121,7 +121,7 @@ function loadDB() {
     }
 }
 
-function saveDB(users) {
+function saveDB(users, specificUsers = null) {
     const TMP_FILE = DB_FILE + '.tmp';
     try {
         // 1. 로컬 파일 저장 (Atomic)
@@ -131,11 +131,12 @@ function saveDB(users) {
         console.error("❌ DB 파일 저장 오류:", e);
     }
 
-    // 2. MongoDB 동기화 (비동기)
+    // 2. MongoDB 동기화 (비동기) - 🍏 최적화: 변경된 유저들만 업데이트
     if (useMongoDB) {
         (async () => {
             try {
-                const bulkOps = users.map(u => ({
+                const targetUsers = specificUsers || users;
+                const bulkOps = targetUsers.map(u => ({
                     updateOne: {
                         filter: { id: u.id },
                         update: { $set: { password: u.password, nickname: u.nickname, chips: u.chips, rebuyCount: u.rebuyCount } },
@@ -233,7 +234,7 @@ app.post('/api/signup', async (req, res) => {
         };
         
         usersDB.push(newUser);
-        saveDB(usersDB); // 🍏 여기서 파일과 DB에 동시에 저장됨
+        saveDB(usersDB, [newUser]); // 🍏 전체가 아닌 신규 유저만 DB 전송
         res.json({ success: true, message: "회원가입 완료!" });
     } catch (err) {
         res.status(500).json({ success: false, message: "회원가입 처리 중 오류 발생" });
@@ -280,7 +281,7 @@ app.post('/api/changeNickname', (req, res) => {
     const userIndex = users.findIndex(u => u.id === id);
     if (userIndex > -1) {
         users[userIndex].nickname = newNickname;
-        saveDB(users);
+        saveDB(users, [users[userIndex]]); // 🍏 변경된 유저만 업데이트
         res.json({ success: true, nickname: newNickname });
     } else {
         res.status(401).json({ success: false, message: "사용자를 찾을 수 없습니다." });
@@ -293,7 +294,7 @@ app.post('/api/resetRebuy', (req, res) => {
     const userIndex = users.findIndex(u => u.id === id);
     if (userIndex > -1) {
         users[userIndex].rebuyCount = 0;
-        saveDB(users);
+        saveDB(users, [users[userIndex]]); // 🍏 변경된 유저만 업데이트
         res.json({ success: true, rebuyCount: 0 });
     } else {
         res.status(401).json({ success: false, message: "사용자를 찾을 수 없습니다." });
@@ -623,7 +624,7 @@ io.on('connection', (socket) => {
         if (uIdx > -1) {
             users[uIdx].rebuyCount = (users[uIdx].rebuyCount || 0) + 1;
             player.rebuyCount = users[uIdx].rebuyCount;
-            saveDB(users);
+            saveDB(users, [users[uIdx]]); // 🍏 변경된 유저만 업데이트
         }
 
         io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 님이 참여를 예약하셨습니다. (다음 판부터 참여)` });
@@ -648,7 +649,7 @@ io.on('connection', (socket) => {
             if (uIdx > -1) {
                 users[uIdx].rebuyCount = (users[uIdx].rebuyCount || 0) + 1;
                 player.rebuyCount = users[uIdx].rebuyCount;
-                saveDB(users);
+                saveDB(users, [users[uIdx]]); // 🍏 변경된 유저만 업데이트
             }
             io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 님이 다음 판 참여를 예약하셨습니다.` });
         } else {
@@ -938,17 +939,16 @@ function awardPot(gs, roomId, winnersOrPlayers) {
     io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `===== 게임 결과 (사이드팟 정산) =====` });
     logs.forEach(text => io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text }));
 
-    // 🍏 [DB 영구 저장] 메모리 캐시 업데이트 및 DB 동기화
-    const updatedUsers = usersDB.map(u => {
+    // 🍏 [DB 영구 저장] 메모리 캐시 업데이트 및 DB 동기화 (우승자들만 선별 업데이트)
+    const prizeWinners = [];
+    usersDB.forEach(u => {
         const winner = gs.lastWinners.find(w => w.nickname === u.nickname);
         if (winner) {
-            const prize = winnersOrPlayers.find(h => h.player?.nickname === u.nickname || h.nickname === u.nickname);
-            // winnersOrPlayers에서 실제 획득 금액을 찾아야 함
-            // 하지만 awardPot 내부에서 이미 player.chips가 업데이트됨
+            // 상금 정산 로직에 따라 u.chips는 이미 awardPot에서 업데이트됨
+            prizeWinners.push(u);
         }
-        return u;
     });
-    saveDB(usersDB);
+    saveDB(usersDB, prizeWinners.length > 0 ? prizeWinners : null);
     let losers = gs.players.filter(p => !p.spectator && p.chips <= 0);
     losers.forEach(p => p.decidingRebuy = true);
     if (losers.length > 0) {
