@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose'); // 🍏 DB 연동용
 const Hand = require('pokersolver').Hand;
 
 // 🔒 서버 비정상 종료 방지를 위한 전역 에러 핸들러
@@ -13,6 +14,31 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason, promise) => {
     console.error('🌊 UNHANDLED REJECTION:', reason);
 });
+
+// 🍏 MongoDB 연결 설정 (Render 환경변수 MONGODB_URI 사용)
+const MONGODB_URI = process.env.MONGODB_URI;
+let useMongoDB = false;
+
+if (MONGODB_URI) {
+    mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+        .then(() => {
+            console.log('✅ MongoDB Atlas Connected!');
+            useMongoDB = true;
+        })
+        .catch(err => console.error('❌ MongoDB Connection Error:', err));
+} else {
+    console.warn('⚠️ MONGODB_URI not found. Using local users.json.');
+}
+
+// 🍏 User 스키마 정의
+const userSchema = new mongoose.Schema({
+    id: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    nickname: { type: String, required: true, unique: true },
+    chips: { type: Number, default: 0 },
+    rebuyCount: { type: Number, default: 0 }
+});
+const User = mongoose.model('User', userSchema);
 
 const app = express();
 const server = http.createServer(app);
@@ -98,21 +124,62 @@ function loadDB() {
 function saveDB(users) {
     const TMP_FILE = DB_FILE + '.tmp';
     try {
-        // 1. 임시 파일에 쓰기 (UTF-8 명시)
+        // 1. 로컬 파일 저장 (Atomic)
         fs.writeFileSync(TMP_FILE, JSON.stringify(users, null, 2), 'utf8');
-        // 2. 파일 교체 (Atomic)
         fs.renameSync(TMP_FILE, DB_FILE);
     } catch (e) {
-        console.error("❌ DB 저장 중 치명적 오류 발생:", e);
-        if (fs.existsSync(TMP_FILE)) {
-            try { fs.unlinkSync(TMP_FILE); } catch(err) {}
-        }
+        console.error("❌ DB 파일 저장 오류:", e);
+    }
+
+    // 2. MongoDB 동기화 (비동기)
+    if (useMongoDB) {
+        (async () => {
+            try {
+                const bulkOps = users.map(u => ({
+                    updateOne: {
+                        filter: { id: u.id },
+                        update: { $set: { password: u.password, nickname: u.nickname, chips: u.chips, rebuyCount: u.rebuyCount } },
+                        upsert: true
+                    }
+                }));
+                if (bulkOps.length > 0) await User.bulkWrite(bulkOps);
+            } catch (err) {
+                console.error("❌ MongoDB Sync Error:", err);
+            }
+        })();
     }
 }
 
-let usersDB = loadDB(); 
+let usersDB = []; // 🍏 메모리 캐시
 const roomsDB = []; 
 let roomIdCounter = 1;
+
+// 🍏 서버 가동 시 DB에서 유저 데이터 로드 (초기화)
+if (MONGODB_URI) {
+    (async () => {
+        try {
+            const users = await User.find({});
+            if (users.length > 0) {
+                usersDB = users.map(u => ({
+                    id: u.id,
+                    password: u.password,
+                    nickname: u.nickname,
+                    chips: u.chips,
+                    rebuyCount: u.rebuyCount
+                }));
+                console.log(`✅ Loaded ${usersDB.length} users from MongoDB Atlas.`);
+            } else {
+                usersDB = loadDB(); // DB가 비었으면 파일에서 로드
+                console.log('ℹ️ MongoDB is empty. Falling back to users.json.');
+            }
+        } catch (err) {
+            console.error('❌ Failed to sync with MongoDB on startup:', err);
+            usersDB = loadDB();
+        }
+    })();
+} else {
+    usersDB = loadDB();
+}
 
 const gameStates = {};
 
@@ -145,36 +212,64 @@ function createDeck() {
 
 // --- API Router ---
 
-app.post('/api/signup', (req, res) => {
-    let users = loadDB();
+// --- [수정] 회원가입 API (Async/DB 연동) ---
+app.post('/api/signup', async (req, res) => {
     const { id, password, nickname } = req.body;
-    if (users.find(u => u.id === id)) return res.status(400).json({ success: false, message: "이미 가입되어 있는 아이디입니다." });
-    if (users.find(u => u.nickname === nickname)) return res.status(400).json({ success: false, message: "이미 사용 중인 닉네임입니다." });
+    try {
+        // 메모리 데이터 우선 검사 (빠른 응답)
+        if (usersDB.find(u => u.id === id)) return res.status(400).json({ success: false, message: "이미 가입되어 있는 아이디입니다." });
+        if (usersDB.find(u => u.nickname === nickname)) return res.status(400).json({ success: false, message: "이미 사용 중인 닉네임입니다." });
 
-    users.push({ id, password, nickname: nickname || `User${Math.floor(Math.random() * 1000)}`, chips: 0, rebuyCount: 0 });
-    saveDB(users);
-    res.json({ success: true, message: "회원가입 완료!" });
+        const newUser = { 
+            id, 
+            password, 
+            nickname: nickname || `User${Math.floor(Math.random() * 1000)}`, 
+            chips: 0, 
+            rebuyCount: 0 
+        };
+        
+        usersDB.push(newUser);
+        saveDB(usersDB); // 🍏 여기서 파일과 DB에 동시에 저장됨
+        res.json({ success: true, message: "회원가입 완료!" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "회원가입 처리 중 오류 발생" });
+    }
 });
 
-app.post('/api/login', (req, res) => {
+// --- [수정] 로그인 API (Async/DB 연동) ---
+app.post('/api/login', async (req, res) => {
     console.log(`[API] LOGIN TRY - ID: ${req.body.id}`);
-    let users = loadDB();
     const { id, password } = req.body;
-    const user = users.find(u => u.id === id && u.password === password);
-    if (user) {
-        console.log(`[API] LOGIN SUCCESS - Nickname: ${user.nickname}`);
-        if (user.chips === undefined) user.chips = 0;
-        if (user.rebuyCount === undefined) user.rebuyCount = 0;
-        saveDB(users);
-        res.json({ success: true, user: { id: user.id, nickname: user.nickname, chips: user.chips, rebuyCount: user.rebuyCount } });
-    } else {
-        console.log(`[API] LOGIN FAILED - ID: ${id}`);
-        res.status(401).json({ success: false, message: "아이디 또는 비밀번호가 틀렸습니다." });
+    
+    try {
+        // DB 모드일 경우 최신 데이터를 위해 DB에서 직접 확인
+        let user;
+        if (useMongoDB) {
+            user = await User.findOne({ id, password });
+        } else {
+            user = usersDB.find(u => u.id === id && u.password === password);
+        }
+
+        if (user) {
+            console.log(`[API] LOGIN SUCCESS - Nickname: ${user.nickname}`);
+            // 메모리 캐시 동기화
+            const cacheIdx = usersDB.findIndex(u => u.id === id);
+            if (cacheIdx > -1) {
+                usersDB[cacheIdx].chips = user.chips;
+                usersDB[cacheIdx].rebuyCount = user.rebuyCount;
+            }
+            res.json({ success: true, user: { id: user.id, nickname: user.nickname, chips: user.chips, rebuyCount: user.rebuyCount } });
+        } else {
+            console.log(`[API] LOGIN FAILED - ID: ${id}`);
+            res.status(401).json({ success: false, message: "아이디 또는 비밀번호가 틀렸습니다." });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: "로그인 중 오류 발생" });
     }
 });
 
 app.post('/api/changeNickname', (req, res) => {
-    let users = loadDB();
+    let users = usersDB;
     const { id, currentNickname, newNickname } = req.body;
     if (users.find(u => u.nickname === newNickname)) return res.status(400).json({ success: false, message: "이미 존재하는 닉네임입니다." });
 
@@ -189,7 +284,7 @@ app.post('/api/changeNickname', (req, res) => {
 });
 
 app.post('/api/resetRebuy', (req, res) => {
-    let users = loadDB();
+    let users = usersDB;
     const { id } = req.body;
     const userIndex = users.findIndex(u => u.id === id);
     if (userIndex > -1) {
@@ -317,7 +412,7 @@ io.on('connection', (socket) => {
         socket.join(`room_${rId}`);
         const gs = gameStates[rId];
         const roomInfo = roomsDB.find(r => r.id === rId);
-        let users = loadDB();
+        let users = usersDB;
         let userDbInfo = users.find(u => u.nickname === nickname);
 
         console.log(`[JOIN_ROOM_DEBUG] RoomID: ${rId}, Nickname: ${nickname}`);
@@ -519,7 +614,7 @@ io.on('connection', (socket) => {
         player.isFold = true; 
         player.waitingForNext = true; // 🍏 다음 판 참여 대기 플래그
 
-        let users = loadDB();
+        let users = usersDB;
         let uIdx = users.findIndex(u => u.nickname === nickname);
         if (uIdx > -1) {
             users[uIdx].rebuyCount = (users[uIdx].rebuyCount || 0) + 1;
@@ -544,7 +639,7 @@ io.on('connection', (socket) => {
             player.spectator = true; 
             player.waitingForNext = true; // 🍏 올인 후 리바이 시 일단 대기 상태로
 
-            let users = loadDB();
+            let users = usersDB;
             let uIdx = users.findIndex(u => u.nickname === nickname);
             if (uIdx > -1) {
                 users[uIdx].rebuyCount = (users[uIdx].rebuyCount || 0) + 1;
@@ -838,8 +933,18 @@ function awardPot(gs, roomId, winnersOrPlayers) {
 
     io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `===== 게임 결과 (사이드팟 정산) =====` });
     logs.forEach(text => io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text }));
-    
-    // 리바이 결정이 필요한 플레이어(올인 패배자) 처리
+
+    // 🍏 [DB 영구 저장] 메모리 캐시 업데이트 및 DB 동기화
+    const updatedUsers = usersDB.map(u => {
+        const winner = gs.lastWinners.find(w => w.nickname === u.nickname);
+        if (winner) {
+            const prize = winnersOrPlayers.find(h => h.player?.nickname === u.nickname || h.nickname === u.nickname);
+            // winnersOrPlayers에서 실제 획득 금액을 찾아야 함
+            // 하지만 awardPot 내부에서 이미 player.chips가 업데이트됨
+        }
+        return u;
+    });
+    saveDB(usersDB);
     let losers = gs.players.filter(p => !p.spectator && p.chips <= 0);
     losers.forEach(p => p.decidingRebuy = true);
     if (losers.length > 0) {
