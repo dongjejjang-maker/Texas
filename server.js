@@ -949,14 +949,17 @@ function initiateNextHand(roomId) {
         playersInGame[sbIdx].role = 'SB';
         playersInGame[bbIdx].role = 'BB';
 
-        playersInGame[sbIdx].chips -= sbAmount;
-        playersInGame[sbIdx].betAmount = sbAmount;
-        playersInGame[sbIdx].totalContribution = sbAmount;
-        playersInGame[bbIdx].chips -= gs.currentBet;
-        playersInGame[bbIdx].betAmount = gs.currentBet;
-        playersInGame[bbIdx].totalContribution = gs.currentBet;
+        const sbActual = Math.min(playersInGame[sbIdx].chips, sbAmount);
+        playersInGame[sbIdx].chips -= sbActual;
+        playersInGame[sbIdx].betAmount = sbActual;
+        playersInGame[sbIdx].totalContribution = sbActual;
 
-        gs.pot = sbAmount + gs.currentBet;
+        const bbActual = Math.min(playersInGame[bbIdx].chips, bbAmount);
+        playersInGame[bbIdx].chips -= bbActual;
+        playersInGame[bbIdx].betAmount = bbActual;
+        playersInGame[bbIdx].totalContribution = bbActual;
+
+        gs.pot = sbActual + bbActual;
 
         // 🛡️ UTG 플레이어 찾기 시 인덱스 안전장치 추가
         let utgIdx = (bbIdx + 1) % playersInGame.length;
