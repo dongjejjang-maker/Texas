@@ -170,7 +170,11 @@ if (MONGODB_URI) {
                 console.log(`✅ Loaded ${usersDB.length} users from MongoDB Atlas.`);
             } else {
                 usersDB = loadDB(); // DB가 비었으면 파일에서 로드
-                console.log('ℹ️ MongoDB is empty. Falling back to users.json.');
+                console.log('ℹ️ MongoDB is empty. Migrating from users.json...');
+                if (usersDB.length > 0) {
+                    saveDB(usersDB); // 🍏 DB로 즉시 마이그레이션 실행
+                    console.log(`✅ Successfully migrated ${usersDB.length} users to MongoDB.`);
+                }
             }
         } catch (err) {
             console.error('❌ Failed to sync with MongoDB on startup:', err);
