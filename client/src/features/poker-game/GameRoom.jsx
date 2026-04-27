@@ -651,7 +651,7 @@ function GameRoom({ userInfo, setUserInfo }) {
             className="poker-table-border"
             style={{
               position: 'absolute',
-              top: isMobile ? '30%' : '50%',
+              top: isMobile ? '30%' : '44%', // 🃏 PC 환경에서 테이블을 버튼 높이만큼 위로 이동
               left: isMobile ? '44%' : '48%',
               transform: 'translate(-50%, -50%)',
               width: isMobile ? '460px' : '710px',
