@@ -1905,3 +1905,153 @@ input[type="range"].raise-slider {
   color: #facc15;
   font-weight: bold;
 }
+
+/* ─── 🎯 세션 시스템 스타일 ─── */
+
+.session-modal {
+  width: 90%;
+  max-width: 520px;
+  min-width: 320px;
+}
+
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.session-card {
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.session-card:hover {
+  border-color: rgba(250, 204, 21, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.15);
+}
+
+.session-type-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.online-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.offline-badge {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.session-status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.active-badge {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.ended-badge {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* 참가자 테이블 */
+.session-participants-table {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.session-table-header {
+  display: grid;
+  grid-template-columns: 1fr 80px 100px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.05);
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: bold;
+}
+
+.session-table-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 100px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+  color: #e2e8f0;
+  align-items: center;
+  gap: 6px;
+}
+
+.session-table-row:has(.session-edit-input) {
+  grid-template-columns: 1fr 70px 90px 30px;
+}
+
+.session-edit-input {
+  padding: 4px 6px !important;
+  font-size: 13px !important;
+  min-width: 0 !important;
+}
+
+/* 정산 테이블 */
+.settlement-table {
+  border: 1px solid rgba(250,204,21,0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.settlement-header {
+  display: grid;
+  grid-template-columns: 1fr 90px 90px 90px;
+  padding: 8px 12px;
+  background: rgba(250,204,21,0.08);
+  font-size: 12px;
+  color: #facc15;
+  font-weight: bold;
+}
+
+.settlement-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 90px 90px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.profit-positive {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.profit-negative {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+/* 방 카드 비활성화 */
+.room-card-disabled {
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+.room-card-disabled .premium-btn {
+  background: #4a5568 !important;
+  cursor: not-allowed;
+}

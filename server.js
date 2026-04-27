@@ -48,9 +48,73 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     nickname: { type: String, required: true, unique: true },
     chips: { type: Number, default: 0 },
-    rebuyCount: { type: Number, default: 0 }
+    rebuyCount: { type: Number, default: 0 },
+    currentSessionId: { type: String, default: null } // 🎯 세션 시스템: 현재 참여 중인 세션 ID
 });
 const User = mongoose.model('User', userSchema);
+
+// 🎯 Session 스키마 정의 (MongoDB)
+const sessionSchema = new mongoose.Schema({
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+    type: { type: String, enum: ['online', 'offline'], required: true },
+    status: { type: String, enum: ['active', 'ended'], default: 'active' },
+    buyIn: { type: Number, required: true },
+    createdAt: { type: String },
+    participants: [{
+        nickname: String,
+        linkedUserId: String, // 온라인: userDB id / 오프라인: null
+        rebuyCount: { type: Number, default: 0 },
+        chips: { type: Number, default: 0 },
+        joinedAt: String
+    }],
+    settlement: { type: mongoose.Schema.Types.Mixed, default: null }
+});
+const Session = mongoose.model('Session', sessionSchema);
+
+// 🎯 세션 파일 기반 저장소
+const SESSION_DB_FILE = path.join(__dirname, 'sessions.json');
+
+function loadSessionDB() {
+    try {
+        if (!fs.existsSync(SESSION_DB_FILE)) {
+            fs.writeFileSync(SESSION_DB_FILE, JSON.stringify([], null, 2), 'utf8');
+        }
+        const data = fs.readFileSync(SESSION_DB_FILE, 'utf8');
+        if (!data || data.trim() === "") return [];
+        return JSON.parse(data);
+    } catch (e) {
+        console.error("❌ 세션 DB 로드 실패:", e.message);
+        return [];
+    }
+}
+
+function saveSessionDB(sessions) {
+    const TMP_FILE = SESSION_DB_FILE + '.tmp';
+    try {
+        fs.writeFileSync(TMP_FILE, JSON.stringify(sessions, null, 2), 'utf8');
+        fs.renameSync(TMP_FILE, SESSION_DB_FILE);
+    } catch (e) {
+        console.error("❌ 세션 DB 파일 저장 오류:", e);
+    }
+    // MongoDB 동기화 (비동기)
+    if (useMongoDB) {
+        (async () => {
+            try {
+                const bulkOps = sessions.map(s => ({
+                    updateOne: {
+                        filter: { id: s.id },
+                        update: { $set: s },
+                        upsert: true
+                    }
+                }));
+                if (bulkOps.length > 0) await Session.bulkWrite(bulkOps);
+            } catch (err) {
+                console.error("❌ Session MongoDB Sync Error:", err);
+            }
+        })();
+    }
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -151,7 +215,7 @@ function saveDB(users, specificUsers = null) {
                 const bulkOps = targetUsers.map(u => ({
                     updateOne: {
                         filter: { id: u.id },
-                        update: { $set: { password: u.password, nickname: u.nickname, chips: u.chips, rebuyCount: u.rebuyCount } },
+                        update: { $set: { password: u.password, nickname: u.nickname, chips: u.chips, rebuyCount: u.rebuyCount, currentSessionId: u.currentSessionId || null } },
                         upsert: true
                     }
                 }));
@@ -164,6 +228,7 @@ function saveDB(users, specificUsers = null) {
 }
 
 let usersDB = []; // 🍏 메모리 캐시
+let sessionsDB = []; // 🎯 세션 메모리 캐시
 const roomsDB = []; 
 let roomIdCounter = 1;
 
@@ -178,7 +243,8 @@ if (MONGODB_URI) {
                     password: u.password,
                     nickname: u.nickname,
                     chips: u.chips,
-                    rebuyCount: u.rebuyCount
+                    rebuyCount: u.rebuyCount,
+                    currentSessionId: u.currentSessionId || null
                 }));
                 console.log(`✅ Loaded ${usersDB.length} users from MongoDB Atlas.`);
             } else {
@@ -197,6 +263,10 @@ if (MONGODB_URI) {
 } else {
     usersDB = loadDB();
 }
+
+// 🎯 세션 데이터 로드
+sessionsDB = loadSessionDB();
+console.log(`✅ Loaded ${sessionsDB.length} sessions from sessions.json.`);
 
 const gameStates = {};
 
@@ -275,7 +345,7 @@ app.post('/api/login', async (req, res) => {
                 usersDB[cacheIdx].chips = user.chips;
                 usersDB[cacheIdx].rebuyCount = user.rebuyCount;
             }
-            res.json({ success: true, user: { id: user.id, nickname: user.nickname, chips: user.chips, rebuyCount: user.rebuyCount } });
+            res.json({ success: true, user: { id: user.id, nickname: user.nickname, chips: user.chips, rebuyCount: user.rebuyCount, currentSessionId: user.currentSessionId || null } });
         } else {
             console.log(`[API] LOGIN FAILED - ID: ${id}`);
             res.status(401).json({ success: false, message: "아이디 또는 비밀번호가 틀렸습니다." });
@@ -313,21 +383,213 @@ app.post('/api/resetRebuy', (req, res) => {
     }
 });
 
+// 🎯 [신규 API] 로비 자유 칩 조절 (세션 미참가 상태에서만)
+app.post('/api/updateChips', (req, res) => {
+    const { id, chips } = req.body;
+    const userIndex = usersDB.findIndex(u => u.id === id);
+    if (userIndex === -1) return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+    if (usersDB[userIndex].currentSessionId) return res.status(400).json({ success: false, message: '세션 참가 중에는 칩을 자유롭게 변경할 수 없습니다.' });
+    usersDB[userIndex].chips = Number(chips);
+    saveDB(usersDB, [usersDB[userIndex]]);
+    res.json({ success: true, chips: usersDB[userIndex].chips });
+});
+
+// 🎯 [신규 API] 세션 생성
+app.post('/api/sessions', (req, res) => {
+    const { name, type, buyIn } = req.body;
+    if (!name || !type || !buyIn) return res.status(400).json({ success: false, message: '세션명, 타입, 바이인 금액을 입력해주세요.' });
+    const newSession = {
+        id: `session_${Date.now()}`,
+        name,
+        type, // 'online' | 'offline'
+        status: 'active',
+        buyIn: Number(buyIn),
+        createdAt: new Date().toISOString(),
+        participants: [],
+        settlement: null
+    };
+    sessionsDB.push(newSession);
+    saveSessionDB(sessionsDB);
+    res.json({ success: true, session: newSession });
+});
+
+// 🎯 [신규 API] 세션 목록 조회
+app.get('/api/sessions', (req, res) => {
+    res.json({ success: true, sessions: sessionsDB });
+});
+
+// 🎯 [신규 API] 세션 상세 조회
+app.get('/api/sessions/:id', (req, res) => {
+    const session = sessionsDB.find(s => s.id === req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: '세션을 찾을 수 없습니다.' });
+    res.json({ success: true, session });
+});
+
+// 🎯 [신규 API] 온라인 세션 참가
+app.post('/api/sessions/:id/join', (req, res) => {
+    const { userId, nickname } = req.body;
+    const session = sessionsDB.find(s => s.id === req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: '세션을 찾을 수 없습니다.' });
+    if (session.status === 'ended') return res.status(400).json({ success: false, message: '이미 종료된 세션입니다.' });
+    if (session.type !== 'online') return res.status(400).json({ success: false, message: '온라인 세션만 참가할 수 있습니다.' });
+
+    const user = usersDB.find(u => u.id === userId);
+    if (!user) return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+    if (user.currentSessionId) return res.status(400).json({ success: false, message: '이미 다른 세션에 참가 중입니다. 먼저 해당 세션을 종료해주세요.' });
+
+    // 이미 참가한 상태인지 확인
+    if (session.participants.find(p => p.linkedUserId === userId)) {
+        return res.status(400).json({ success: false, message: '이미 이 세션에 참가하고 있습니다.' });
+    }
+
+    // 참가 처리: 칩을 바이인으로 덮어쓰기, 리바인 0 초기화
+    user.chips = session.buyIn;
+    user.rebuyCount = 0;
+    user.currentSessionId = session.id;
+
+    session.participants.push({
+        nickname: user.nickname,
+        linkedUserId: user.id,
+        rebuyCount: 0,
+        chips: session.buyIn,
+        joinedAt: new Date().toISOString()
+    });
+
+    saveDB(usersDB, [user]);
+    saveSessionDB(sessionsDB);
+    res.json({ success: true, user: { id: user.id, nickname: user.nickname, chips: user.chips, rebuyCount: user.rebuyCount, currentSessionId: user.currentSessionId } });
+});
+
+// 🎯 [신규 API] 세션 종료
+app.post('/api/sessions/:id/end', (req, res) => {
+    const session = sessionsDB.find(s => s.id === req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: '세션을 찾을 수 없습니다.' });
+    
+    session.status = 'ended';
+
+    // 온라인 세션인 경우 참가자들의 currentSessionId 초기화
+    if (session.type === 'online') {
+        session.participants.forEach(p => {
+            if (p.linkedUserId) {
+                const user = usersDB.find(u => u.id === p.linkedUserId);
+                if (user) {
+                    user.currentSessionId = null;
+                }
+            }
+        });
+        saveDB(usersDB);
+    }
+
+    saveSessionDB(sessionsDB);
+    res.json({ success: true, session });
+});
+
+// 🎯 [신규 API] 정산 계산
+app.post('/api/sessions/:id/settle', (req, res) => {
+    const session = sessionsDB.find(s => s.id === req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: '세션을 찾을 수 없습니다.' });
+
+    // 온라인 세션이면 최신 칩 동기화
+    if (session.type === 'online') {
+        session.participants.forEach(p => {
+            if (p.linkedUserId) {
+                const user = usersDB.find(u => u.id === p.linkedUserId);
+                if (user) {
+                    p.chips = user.chips;
+                    p.rebuyCount = user.rebuyCount;
+                }
+            }
+        });
+    }
+
+    const settlement = session.participants.map(p => {
+        const totalInvested = session.buyIn + (session.buyIn * p.rebuyCount);
+        const profit = p.chips - totalInvested;
+        return {
+            nickname: p.nickname,
+            rebuyCount: p.rebuyCount,
+            totalInvested,
+            finalChips: p.chips,
+            profit
+        };
+    });
+
+    session.settlement = settlement;
+    saveSessionDB(sessionsDB);
+    res.json({ success: true, settlement });
+});
+
+// 🎯 [신규 API] 오프라인 세션 수정 (참가자 추가/수정, 세션 정보 수정)
+app.put('/api/sessions/:id', (req, res) => {
+    const sessionIndex = sessionsDB.findIndex(s => s.id === req.params.id);
+    if (sessionIndex === -1) return res.status(404).json({ success: false, message: '세션을 찾을 수 없습니다.' });
+
+    const { name, buyIn, participants } = req.body;
+    if (name !== undefined) sessionsDB[sessionIndex].name = name;
+    if (buyIn !== undefined) sessionsDB[sessionIndex].buyIn = Number(buyIn);
+    if (participants !== undefined) sessionsDB[sessionIndex].participants = participants;
+
+    saveSessionDB(sessionsDB);
+    res.json({ success: true, session: sessionsDB[sessionIndex] });
+});
+
+// 🎯 [신규 API] 세션 삭제
+app.delete('/api/sessions/:id', (req, res) => {
+    const sessionIndex = sessionsDB.findIndex(s => s.id === req.params.id);
+    if (sessionIndex === -1) return res.status(404).json({ success: false, message: '세션을 찾을 수 없습니다.' });
+
+    const session = sessionsDB[sessionIndex];
+    // 온라인 세션이 아직 활성 상태면 참가자 초기화
+    if (session.type === 'online' && session.status === 'active') {
+        session.participants.forEach(p => {
+            if (p.linkedUserId) {
+                const user = usersDB.find(u => u.id === p.linkedUserId);
+                if (user) user.currentSessionId = null;
+            }
+        });
+        saveDB(usersDB);
+    }
+
+    sessionsDB.splice(sessionIndex, 1);
+    saveSessionDB(sessionsDB);
+    // MongoDB에서도 삭제
+    if (useMongoDB) {
+        Session.deleteOne({ id: req.params.id }).catch(err => console.error('Session delete error:', err));
+    }
+    res.json({ success: true });
+});
+
 app.post('/api/rooms', (req, res) => {
-    const { title, buyIn, maxPlayers, sb, bb } = req.body;
+    const { title, buyIn, maxPlayers, sb, bb, creatorId } = req.body;
     // 🍏 8인용 통합 좌표 레이아웃 정합성을 위해 최대 인원을 8명으로 강제 제한
     const cappedMaxPlayers = Math.min(Number(maxPlayers) || 8, 8);
+
+    // 🎯 세션 연동: 방 생성자가 세션에 참가 중이면 세션 방으로 설정
+    let sessionId = null;
+    let finalTitle = title;
+    if (creatorId) {
+        const creator = usersDB.find(u => u.id === creatorId);
+        if (creator && creator.currentSessionId) {
+            sessionId = creator.currentSessionId;
+            const session = sessionsDB.find(s => s.id === sessionId);
+            if (session) {
+                finalTitle = `${title} : ${session.name}`;
+            }
+        }
+    }
+
     const newRoom = { 
         id: roomIdCounter++, 
-        title, 
+        title: finalTitle, 
         buyIn: Number(buyIn), 
         maxPlayers: cappedMaxPlayers, 
         sb: Number(sb), 
         bb: Number(bb), 
-        currentPlayers: 0 
+        currentPlayers: 0,
+        sessionId // 🎯 세션 소속 (null이면 일반 방)
     };
     roomsDB.push(newRoom);
-    console.log(`[CREATE_ROOM_DEBUG] Created Room ID: ${newRoom.id}, Title: ${title}`);
+    console.log(`[CREATE_ROOM_DEBUG] Created Room ID: ${newRoom.id}, Title: ${finalTitle}, SessionId: ${sessionId}`);
 
     gameStates[newRoom.id] = {
         roomId: newRoom.id,
@@ -449,6 +711,22 @@ io.on('connection', (socket) => {
         console.log(` - userDbInfo exist: ${!!userDbInfo}`);
 
         if (gs && roomInfo && userDbInfo) {
+            // 🎯 세션 기반 입장 제한
+            const roomSessionId = roomInfo.sessionId || null;
+            const userSessionId = userDbInfo.currentSessionId || null;
+            if (roomSessionId && roomSessionId !== userSessionId) {
+                socket.emit('joinRoomError', { message: '이 방은 세션 전용 방입니다. 같은 세션에 참가해야 입장할 수 있습니다.' });
+                socket.leave(`room_${rId}`);
+                socket.roomId = null;
+                return;
+            }
+            if (!roomSessionId && userSessionId) {
+                socket.emit('joinRoomError', { message: '세션 참가 중에는 일반 방에 입장할 수 없습니다. 세션 방을 이용해주세요.' });
+                socket.leave(`room_${rId}`);
+                socket.roomId = null;
+                return;
+            }
+
             let p = gs.players.find(p => p.nickname === nickname);
             if (!p && gs.players.length < roomInfo.maxPlayers) {
                 // 🍏 게임이 진행 중인지 확인
@@ -1006,6 +1284,24 @@ function awardPot(gs, roomId, winnersOrPlayers) {
         if (winner) prizeWinners.push(u);
     });
     saveDB(usersDB, prizeWinners.length > 0 ? prizeWinners : null);
+
+    // 🎯 [세션 동기화] 매판 종료 시 세션 참가자의 칩/리바인을 sessionDB에 반영
+    let sessionSyncNeeded = false;
+    gs.players.forEach(p => {
+        const userInDB = usersDB.find(u => u.nickname === p.nickname);
+        if (userInDB && userInDB.currentSessionId) {
+            const session = sessionsDB.find(s => s.id === userInDB.currentSessionId);
+            if (session) {
+                const participant = session.participants.find(pt => pt.linkedUserId === userInDB.id);
+                if (participant) {
+                    participant.chips = p.chips;
+                    participant.rebuyCount = userInDB.rebuyCount;
+                    sessionSyncNeeded = true;
+                }
+            }
+        }
+    });
+    if (sessionSyncNeeded) saveSessionDB(sessionsDB);
 
     io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
 }
