@@ -756,7 +756,8 @@ io.on('connection', (socket) => {
                 gs.players.push({
                     socketId: socket.id,
                     nickname: nickname,
-                    chips: roomInfo.buyIn,
+                    // 🎯 세션 연동: 세션 방 입장 시 사용자의 현재 보유 칩을 그대로 들고 입장
+                    chips: (roomInfo.sessionId && userDbInfo.currentSessionId === roomInfo.sessionId) ? userDbInfo.chips : roomInfo.buyIn,
                     role: '',
                     isFold: isGameInProgress, // 진행 중이면 폴드 상태로 시작
                     betAmount: 0,
@@ -1299,12 +1300,13 @@ function awardPot(gs, roomId, winnersOrPlayers) {
     logs.forEach(text => io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text }));
 
     // 🍏 [DB 영구 저장] 메모리 캐시 업데이트 및 DB 동기화
-    const prizeWinners = [];
-    usersDB.forEach(u => {
-        const winner = gs.lastWinners.find(w => w.nickname === u.nickname);
-        if (winner) prizeWinners.push(u);
+    gs.players.forEach(p => {
+        const userInDB = usersDB.find(u => u.nickname === p.nickname);
+        if (userInDB) {
+            userInDB.chips = p.chips;
+        }
     });
-    saveDB(usersDB, prizeWinners.length > 0 ? prizeWinners : null);
+    saveDB(usersDB);
 
     // 🎯 [세션 동기화] 매판 종료 시 세션 참가자의 칩/리바인을 sessionDB에 반영
     let sessionSyncNeeded = false;
