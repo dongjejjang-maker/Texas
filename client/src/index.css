@@ -364,12 +364,43 @@ body {
   margin-right: 8px;
 }
 
-/* Community Cards (寃뱀묠 諛⑹?瑜??꾪빐 媛꾧꺽 ?뺤옣) */
+/* Community Cards (겹침 방지를 위해 간격 확장) */
 .community-cards-row,
 .community-cards {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 15px; /* 간격 살짝 확대 */
+  margin-bottom: 15px; /* PC 여백 확보 */
+  transform: scale(1.1); /* 🃏 PC에서도 내 패와 동일하게 1.1배 확대 */
+  transform-origin: center;
+}
+
+/* 🃏 커뮤니티 카드 크기를 내 패와 동일하게 (60x90) */
+.community-cards .playing-card,
+.community-cards .card-back,
+.community-cards .flip-card-container {
+  width: 60px !important;
+  height: 90px !important;
+}
+
+.community-cards .playing-card .card-top {
+  top: 4px;
+  left: 8px;
+  font-size: 16px;
+}
+
+.community-cards .playing-card .card-center {
+  font-size: 40px;
+}
+
+.community-cards .playing-card .card-bottom {
+  bottom: 4px;
+  right: 8px;
+  font-size: 16px;
+}
+
+.community-cards .playing-card .mini-suit {
+  font-size: 14px;
 }
 
 /* Seats Positioning */
@@ -1810,6 +1841,14 @@ input[type="range"].raise-slider {
 
   .hand-rank-badge {
     bottom: 160px !important;
+  }
+
+  /* 🃏 모바일 커뮤니티 카드 확대 (내 패와 균형 맞춤) */
+  .community-cards {
+    gap: 10px !important;
+    transform: scale(1.1); /* 1.1배 확대 */
+    transform-origin: center;
+    margin-bottom: 15px !important;
   }
 }
 
