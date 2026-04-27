@@ -1844,6 +1844,17 @@ input[type="range"].raise-slider {
     line-height: 1.2 !important;
     margin: 0 !important;
   }
+
+  /* 💬 모바일 채팅 팝업 크기 조절 (상단 절반만 사용) */
+  .chat-modal-overlay {
+    align-items: flex-start !important; /* 상단에 배치 */
+    padding-top: 10px;
+  }
+  .chat-modal-content {
+    height: 50vh !important;
+    max-height: 50vh !important;
+    border-radius: 12px !important;
+  }
 }
 
 /* 🍯 공통 칩 시스템 보강 스타일 */

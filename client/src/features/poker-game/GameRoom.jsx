@@ -140,6 +140,12 @@ function GameRoom({ userInfo, setUserInfo }) {
 
   useEffect(() => {
     showChatModalRef.current = showChatModal;
+    // 🍏 채팅창이 열릴 때 즉시 최하단으로 스크롤
+    if (showChatModal) {
+      setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 100);
+    }
   }, [showChatModal]);
 
   const playChipSound = useCallback((count = 1) => {
@@ -508,6 +514,12 @@ function GameRoom({ userInfo, setUserInfo }) {
         e.preventDefault();
         setShowRaisePanel(false);
       }
+    } else if (showChatModal) {
+      // 🍏 채팅창이 열려있을 때 Esc로 닫기
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowChatModal(false);
+      }
     } else {
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -521,6 +533,11 @@ function GameRoom({ userInfo, setUserInfo }) {
           setRaiseAmount(Math.min(minRaise, myInfo?.chips || 0));
           setShowRaisePanel(true);
         }
+      } else if (e.key === 'Enter') {
+        // 🍏 레이즈 패널이 없을 때 엔터 누르면 채팅창 열기
+        e.preventDefault();
+        setShowChatModal(true);
+        setHasNewMessage(false);
       }
     }
   };
@@ -528,7 +545,7 @@ function GameRoom({ userInfo, setUserInfo }) {
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMyTurn, showRaisePanel, raiseAmount, minRaise, myInfo?.chips, isAllInCall]);
+  }, [isMyTurn, showRaisePanel, showChatModal, raiseAmount, minRaise, myInfo?.chips, isAllInCall]);
 
   // ⚙️ 방 설정 변경 요청
   const updateSettings = (newSettings) => {
