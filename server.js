@@ -1565,3 +1565,4 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => { 
     console.log(`정통 홀덤 서버 완벽 가동 중! (Port: ${PORT}) 🚀`); 
 });
+// 🔄 Reboot Trigger: 2026-04-27 23:59
