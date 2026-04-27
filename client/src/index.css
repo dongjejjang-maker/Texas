@@ -1096,11 +1096,10 @@ input[type="range"].raise-slider {
 .blocking-overlay {
   position: absolute;
   top: 80px;
-  /* ??삳쐭(~54px) + marginBottom(15px) + ???(~11px) */
   left: 0;
   width: 100%;
   height: calc(100% - 80px);
-  background: transparent;
+  background: rgba(0, 0, 0, 0.15); /* 🍏 아주 살짝 어둡게 하여 대기 상태임을 인지시킴 */
   display: flex;
   justify-content: center;
   align-items: flex-start;
