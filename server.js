@@ -265,8 +265,29 @@ if (MONGODB_URI) {
 }
 
 // 🎯 세션 데이터 로드
-sessionsDB = loadSessionDB();
-console.log(`✅ Loaded ${sessionsDB.length} sessions from sessions.json.`);
+if (MONGODB_URI) {
+    (async () => {
+        try {
+            const sessions = await Session.find({});
+            if (sessions.length > 0) {
+                sessionsDB = sessions.map(s => s.toObject());
+                console.log(`✅ Loaded ${sessionsDB.length} sessions from MongoDB Atlas.`);
+            } else {
+                sessionsDB = loadSessionDB();
+                if (sessionsDB.length > 0) {
+                    saveSessionDB(sessionsDB);
+                    console.log(`✅ Migrated ${sessionsDB.length} sessions to MongoDB.`);
+                }
+            }
+        } catch (err) {
+            console.error('❌ Failed to sync sessions with MongoDB on startup:', err);
+            sessionsDB = loadSessionDB();
+        }
+    })();
+} else {
+    sessionsDB = loadSessionDB();
+}
+console.log(`✅ Session data initialized (Local fallback ready).`);
 
 const gameStates = {};
 
