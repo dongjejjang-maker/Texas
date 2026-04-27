@@ -405,7 +405,6 @@ function GameRoom({ userInfo, setUserInfo }) {
     socket.on('updateGameState', handleUpdateGameState);
     socket.on('chatMessage', handleChatMessage);
     socket.on('dealPrivateCards', handleDealPrivateCards);
-    socket.on('playerActionNotification', handlePlayerActionNotification);
     socket.on('joinRoomError', handleJoinRoomError);
 
     return () => {
@@ -413,7 +412,6 @@ function GameRoom({ userInfo, setUserInfo }) {
       socket.off('updateGameState', handleUpdateGameState);
       socket.off('chatMessage', handleChatMessage);
       socket.off('dealPrivateCards', handleDealPrivateCards);
-      socket.off('playerActionNotification', handlePlayerActionNotification);
       socket.off('joinRoomError', handleJoinRoomError);
     };
   }, [roomId, userInfo?.nickname]);
