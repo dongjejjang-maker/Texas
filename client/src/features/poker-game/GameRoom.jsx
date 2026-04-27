@@ -655,7 +655,7 @@ function GameRoom({ userInfo, setUserInfo }) {
               left: isMobile ? '44%' : '48%',
               transform: 'translate(-50%, -50%)',
               width: isMobile ? '460px' : '710px',
-              height: isMobile ? '640px' : '462px', // 🃏 모바일 높이 약 30px 축소 (670px -> 640px)
+              height: isMobile ? '610px' : '462px', // 🃏 모바일 높이 추가 30px 축소 (640px -> 610px)
               borderRadius: isMobile ? '180px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
