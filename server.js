@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-// 🔄 Manual Restart Trigger: 2026-04-27
+// 🔄 DB Connection Retry Trigger: 2026-04-27 20:15
 const mongoose = require('mongoose'); // 🍏 DB 연동용
 const Hand = require('pokersolver').Hand;
 
