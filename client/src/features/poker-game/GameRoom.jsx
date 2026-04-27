@@ -620,7 +620,6 @@ function GameRoom({ userInfo, setUserInfo }) {
           <div className="back-btn" onClick={() => { socket.emit('leaveRoom'); navigate('/lobby'); }} style={{ fontSize: isMobile ? '12px' : '14px' }}>← 나가기</div>
 
           <div className="header-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {/* PC 환경에서는 진행중 메뉴가 우측이 아닌 중앙에 배치되도록 스타일 조정할 수 있으나, 현재 구조를 유지하며 정렬만 보정 */}
             <button className="settings-gear-btn" onClick={() => setShowSettings(true)} title="방 설정" style={{ fontSize: isMobile ? '16px' : '18px', background: 'none', border: 'none', cursor: 'pointer', padding: isMobile ? '2px' : '5px' }}>
               ⚙️
             </button>
@@ -659,6 +658,7 @@ function GameRoom({ userInfo, setUserInfo }) {
 
       <div className="game-main-area">
 
+
         <div className="mini-chat-container" onClick={() => { setShowChatModal(true); setHasNewMessage(false); }}>
           {chatLogs.slice(isMobile ? -2 : -3).length > 0 ? chatLogs.slice(isMobile ? -2 : -3).map((log, i) => (
             <div key={i} className={`mini-chat-line ${log.sender === '시스템' ? 'sys' : ''}`}>
@@ -691,7 +691,9 @@ function GameRoom({ userInfo, setUserInfo }) {
           >
             <div className="pill-table" style={{ pointerEvents: 'auto', position: 'relative' }}>
               <div className="table-center-info">
-                <div className="table-text">상태: {gameState.phase}</div>
+                <div className="table-text" style={{ fontSize: '18px', fontWeight: '800', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)', letterSpacing: '-0.5px' }}>
+                  {gameState?.lastAction || gameState?.phase}
+                </div>
                 <div className="pot-display" style={{ marginTop: '5px', fontSize: '24px', fontWeight: 'bold', color: '#facc15', textShadow: '0 2px 4px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
 
                   <div className="pot-chips-container relative-pot-chips" style={{ position: 'relative', width: '40px', height: '40px', left: '0', top: '0', transform: 'none', zIndex: 1 }}>

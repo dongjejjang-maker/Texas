@@ -533,17 +533,14 @@ io.on('connection', (socket) => {
 
         if (action === '폴드') {
             player.isFold = true;
+            gs.lastAction = `[${nickname}] 폴드`;
             io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 폴드` });
         }
-        else if (action === '콜') {
-            let toCall = Math.min(gs.currentBet - player.betAmount, player.chips);
-            player.chips -= toCall;
-            player.betAmount += toCall;
-            player.totalContribution = (player.totalContribution || 0) + toCall;
-            gs.pot += toCall;
             if (toCall === 0) {
+                gs.lastAction = `[${nickname}] 체크`;
                 io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 체크` });
             } else {
+                gs.lastAction = `[${nickname}] 콜`;
                 io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 콜` });
             }
         }
@@ -560,6 +557,7 @@ io.on('connection', (socket) => {
                 gs.currentBet = player.betAmount;
                 gs.players.forEach(p => { if (!p.isFold && p.chips > 0 && p !== player) p.hasActed = false; });
             }
+            gs.lastAction = `[${nickname}] ${action} (${raiseAmount})`;
             io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] ${action} (${raiseAmount})` });
         }
 
@@ -788,6 +786,7 @@ function progressGameStage(gs, roomId) {
 
 function doShowdown(gs, roomId, activePlayers) {
     gs.phase = '쇼다운';
+    gs.lastAction = "쇼다운 (카드 공개)";
     const commCards = gs.communityCards;
 
     let solvedHands = activePlayers.map(p => {
@@ -916,8 +915,10 @@ function awardPot(gs, roomId, winnersOrPlayers) {
         const names = [...new Set(gs.lastWinners.map(w => w.nickname))].join(", ");
         const bestHand = gs.lastWinners[0].handName;
         gs.phase = `종료 (승자: ${names}) - [${bestHand}]`;
+        gs.lastAction = `승자: ${names} (${bestHand})`;
     } else {
         gs.phase = `종료 (정산 완료)`;
+        gs.lastAction = "게임 종료 (정산 완료)";
     }
 
     gs.pot = 0; // 정산 완료
@@ -1015,6 +1016,7 @@ function initiateNextHand(roomId) {
                 gs.autoStartTimer = null;
             }
         }
+        gs.lastAction = "프리플랍 시작";
 
         if (gs.isBlockingAction) {
             console.log(`[ROOM ${roomId}] Game is blocked (e.g. Rebuy decision).`);
@@ -1162,6 +1164,7 @@ function getPublicGameState(gs, socketId) {
         lastRaiseDifference: gs.lastRaiseDifference,
         isAutoMode: gs.isAutoMode, // 🍏 동기화된 자동 모드 상태 전송
         autoStartDelay: gs.autoStartDelay, // 🍏 동적 대기 시간 전송
+        lastAction: gs.lastAction || gs.phase, // 🍏 최근 액션/상태 정보 전송
         communityCards: gs.communityCards.map(formatCardForUI),
         isBlockingAction: gs.isBlockingAction,
         lastWinners: gs.lastWinners || [], 
