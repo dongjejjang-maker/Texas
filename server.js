@@ -948,8 +948,22 @@ function awardPot(gs, roomId, winnersOrPlayers) {
     const totalDelay = isShowdown ? (baseDelay + 3000) : baseDelay;
     gs.autoStartDelay = totalDelay;
 
-    // 🍏 서버 사이드 자동 진행 체크
-    if (gs.isAutoMode) {
+    // 🍏 [순서 변경] 리바인 대상자 체크를 정산 직후, 타이머 시작 전으로 이동
+    let losers = gs.players.filter(p => !p.spectator && p.chips <= 0);
+    losers.forEach(p => p.decidingRebuy = true);
+    if (losers.length > 0) {
+        gs.isBlockingAction = true;
+        // 🍏 리바이 결정이 필요하면 아예 자동 진행 타이머를 시작하지 않음
+        gs.isAutoMode = false;
+        if (gs.autoStartTimer) {
+            clearTimeout(gs.autoStartTimer);
+            gs.autoStartTimer = null;
+        }
+        io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '🔔 누군가의 리바인 결정을 기다려야 하므로 자동 진행이 해제되었습니다.' });
+    }
+
+    // 🍏 서버 사이드 자동 진행 체크 (리바인이 없을 때만 타이머 가동)
+    if (gs.isAutoMode && !gs.isBlockingAction) {
         // [보강] 게임 가능 인원이 2명 미만이면 자동 진행 카운트다운을 하지 않음
         const activeCount = gs.players.filter(p => !p.spectator && p.chips > 0).length;
         if (activeCount < 2) {
@@ -963,8 +977,8 @@ function awardPot(gs, roomId, winnersOrPlayers) {
 
         if (gs.autoStartTimer) clearTimeout(gs.autoStartTimer);
         gs.autoStartTimer = setTimeout(() => {
-            if (gs.isAutoMode) {
-                console.log(`[AUTO] Automatically starting next game in Room ${roomId} (after ${totalDelay}ms, isShowdown: ${isShowdown})`);
+            if (gs.isAutoMode && !gs.isBlockingAction) {
+                console.log(`[AUTO] Automatically starting next game in Room ${roomId} (after ${totalDelay}ms)`);
                 initiateNextHand(roomId);
             }
             gs.autoStartTimer = null;
@@ -974,30 +988,13 @@ function awardPot(gs, roomId, winnersOrPlayers) {
     io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `===== 게임 결과 (사이드팟 정산) =====` });
     logs.forEach(text => io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text }));
 
-    // 🍏 [DB 영구 저장] 메모리 캐시 업데이트 및 DB 동기화 (우승자들만 선별 업데이트)
+    // 🍏 [DB 영구 저장] 메모리 캐시 업데이트 및 DB 동기화
     const prizeWinners = [];
     usersDB.forEach(u => {
         const winner = gs.lastWinners.find(w => w.nickname === u.nickname);
-        if (winner) {
-            // 상금 정산 로직에 따라 u.chips는 이미 awardPot에서 업데이트됨
-            prizeWinners.push(u);
-        }
+        if (winner) prizeWinners.push(u);
     });
     saveDB(usersDB, prizeWinners.length > 0 ? prizeWinners : null);
-    let losers = gs.players.filter(p => !p.spectator && p.chips <= 0);
-    losers.forEach(p => p.decidingRebuy = true);
-    if (losers.length > 0) {
-        gs.isBlockingAction = true;
-        // 🍏 리바이 결정이 필요하면 자동 진행을 해제하여 혼란 방지
-        if (gs.isAutoMode) {
-            gs.isAutoMode = false;
-            if (gs.autoStartTimer) {
-                clearTimeout(gs.autoStartTimer);
-                gs.autoStartTimer = null;
-            }
-            io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '🔔 누군가의 리바인 결정을 기다려야 하므로 자동 진행이 해제되었습니다.' });
-        }
-    }
 
     io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
 }
@@ -1009,7 +1006,10 @@ function resetGame(gs, roomId) {
     gs.phase = '대기 중';
     gs.players.forEach(p => {
         p.privateCards = []; p.betAmount = 0; p.totalContribution = 0; p.hasActed = false; p.role = ''; p.isFold = false; p.isRevealed = false;
-        if (!p.decidingRebuy && p.chips > 0) {
+        // 🍏 칩이 0원 이하인 플레이어는 결정 중이 아니더라도 강제 관전 모드로 전환
+        if (p.chips <= 0) {
+            p.spectator = true;
+        } else if (!p.decidingRebuy) {
             p.spectator = false;
         }
     });
@@ -1072,7 +1072,7 @@ function initiateNextHand(roomId) {
 
         gs.streetRaiseCount = 1; // 🍏 프리플랍은 BB(1-bet)이 포함된 상태로 시작
 
-        let playersInGame = gs.players.filter(p => !p.spectator);
+        let playersInGame = gs.players.filter(p => !p.spectator && p.chips > 0);
         if (playersInGame.length < 2) {
             console.log(`[ROOM ${roomId}] Not enough active players after cleanup.`);
             if (gs.isAutoMode) {
