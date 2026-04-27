@@ -96,9 +96,17 @@ function GameRoom({ userInfo, setUserInfo }) {
   const [gameState, setGameState] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   
-  // 🍏 배경음(BGM) 및 효과음(SFX) 볼륨 이원화 관리
-  const [bgmVolume, setBgmVolume] = useState(() => Number(localStorage.getItem('poker_bgm_volume') ?? '0.3'));
-  const [sfxVolume, setSfxVolume] = useState(() => Number(localStorage.getItem('poker_sfx_volume') ?? '0.5'));
+  // 🍏 배경음(BGM) 및 효과음(SFX) 볼륨 이원화 관리 (안전한 초기화 로직 추가)
+  const [bgmVolume, setBgmVolume] = useState(() => {
+    const saved = localStorage.getItem('poker_bgm_volume');
+    const val = saved ? Number(saved) : 0.3;
+    return isNaN(val) ? 0.3 : Math.max(0, Math.min(1, val));
+  });
+  const [sfxVolume, setSfxVolume] = useState(() => {
+    const saved = localStorage.getItem('poker_sfx_volume');
+    const val = saved ? Number(saved) : 0.5;
+    return isNaN(val) ? 0.5 : Math.max(0, Math.min(1, val));
+  });
   
   const bgmRef = useRef(new Audio());
   const sfxRef = useRef({}); // 효과음 객체 캐시용
@@ -224,13 +232,13 @@ function GameRoom({ userInfo, setUserInfo }) {
 
   const playTTS = (text) => {
     try {
+      if (!window.speechSynthesis) return;
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
-      // 🍏 효과음 볼륨과 연동 (0.0 ~ 1.0)
       u.volume = sfxVolume;
-      const voices = speechSynthesis.getVoices();
+      const voices = window.speechSynthesis.getVoices();
       u.voice = voices.find(v => v.name.includes('Google') && v.lang.includes('en')) || voices.find(v => v.lang.includes('en')) || null;
-      speechSynthesis.speak(u);
+      window.speechSynthesis.speak(u);
     } catch (e) { }
   };
 
