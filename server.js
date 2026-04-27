@@ -4,6 +4,17 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+
+// ─── BGM 목록 (client/public/sound/bgm 폴더 기준) ───
+const BGM_LIST = [
+    "Intro - 장영규 - Topic (128k).mp3",
+    "고니의 테마 - 장영규 - Topic (128k).mp3",
+    "복수를 위하여 - 장영규 - Topic (128k).mp3",
+    "화려한 유혹 - 장영규 - Topic (128k).mp3",
+    "휘파람 여인 - 장영규 - Topic (128k).mp3"
+];
+
+const roomsDBPath = path.join(__dirname, 'rooms.json');
 // 🔄 DB Connection Retry Trigger: 2026-04-27 20:15
 const mongoose = require('mongoose'); // 🍏 DB 연동용
 const Hand = require('pokersolver').Hand;
@@ -1034,6 +1045,10 @@ function initiateNextHand(roomId) {
         }
         gs.lastAction = "프리플랍 시작";
 
+        // 🍏 판이 시작될 때마다 BGM을 랜덤하게 교체 (동기화용)
+        const randomBgm = BGM_LIST[Math.floor(Math.random() * BGM_LIST.length)];
+        gs.bgmFile = randomBgm;
+
         if (gs.isBlockingAction) {
             console.log(`[ROOM ${roomId}] Game is blocked (e.g. Rebuy decision).`);
             return;
@@ -1181,6 +1196,7 @@ function getPublicGameState(gs, socketId) {
         isAutoMode: gs.isAutoMode, // 🍏 동기화된 자동 모드 상태 전송
         autoStartDelay: gs.autoStartDelay, // 🍏 동적 대기 시간 전송
         lastAction: gs.lastAction || gs.phase, // 🍏 최근 액션/상태 정보 전송
+        bgmFile: gs.bgmFile || "", // 🍏 동기화된 BGM 파일명 전송
         communityCards: gs.communityCards.map(formatCardForUI),
         isBlockingAction: gs.isBlockingAction,
         lastWinners: gs.lastWinners || [], 

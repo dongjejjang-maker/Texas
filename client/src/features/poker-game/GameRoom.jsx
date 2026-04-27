@@ -95,12 +95,24 @@ function GameRoom({ userInfo, setUserInfo }) {
 
   const [gameState, setGameState] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [localVolume, setLocalVolume] = useState(() => {
-    return Number(localStorage.getItem('poker_volume') ?? '0.5');
-  });
-  const volumeRef = useRef(0.5); // 🍏 클로저 방지용 레프
-  const containerRef = useRef(null); // 🍏 테이블 컨테이너 레프 (추가됨)
-  useEffect(() => { volumeRef.current = localVolume; }, [localVolume]);
+  
+  // 🍏 배경음(BGM) 및 효과음(SFX) 볼륨 이원화 관리
+  const [bgmVolume, setBgmVolume] = useState(() => Number(localStorage.getItem('poker_bgm_volume') ?? '0.3'));
+  const [sfxVolume, setSfxVolume] = useState(() => Number(localStorage.getItem('poker_sfx_volume') ?? '0.5'));
+  
+  const bgmRef = useRef(new Audio());
+  const sfxRef = useRef({}); // 효과음 객체 캐시용
+  
+  useEffect(() => {
+    localStorage.setItem('poker_bgm_volume', bgmVolume.toString());
+    if (bgmRef.current) bgmRef.current.volume = bgmVolume;
+  }, [bgmVolume]);
+
+  useEffect(() => {
+    localStorage.setItem('poker_sfx_volume', sfxVolume.toString());
+  }, [sfxVolume]);
+
+  const volumeRef = useRef(0.5); // 하위 호환용 (필요시 제거 가능)
 
   const gameStateRef = useRef(null); // 🍏 리스너 내 최신 상태 참조용
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
@@ -148,37 +160,74 @@ function GameRoom({ userInfo, setUserInfo }) {
     }
   }, [showChatModal]);
 
+  // 🍏 [효과음 재생 함수]
+  const playSFX = useCallback((filename) => {
+    const sound = new Audio(`/sound/${filename}`);
+    sound.volume = sfxVolume;
+    sound.play().catch(e => console.log("SFX Play Error:", e));
+  }, [sfxVolume]);
+
   const playChipSound = useCallback((count = 1) => {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const playSingle = (delay = 0) => {
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+    // 🍏 기존 오실레이터 대신 실제 칩 사운드 파일 랜덤 재생
+    const randIdx = Math.floor(Math.random() * 3) + 1;
+    const sound = new Audio(`/sound/chip_sound${randIdx}.mp3`);
+    sound.volume = sfxVolume;
+    sound.play().catch(() => {});
+  }, [sfxVolume]);
 
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(800 + Math.random() * 200, audioCtx.currentTime + delay);
+  // 🍏 [BGM 동기화 및 재생]
+  useEffect(() => {
+    const bgmFile = gameState?.bgmFile;
+    if (bgmFile && bgmRef.current) {
+      const currentSrc = bgmRef.current.src;
+      const targetSrc = `${window.location.origin}/sound/bgm/${bgmFile}`;
+      
+      // 파일이 바뀌었을 때만 새로 재생
+      if (!currentSrc.includes(encodeURI(bgmFile))) {
+        bgmRef.current.pause();
+        bgmRef.current.src = targetSrc;
+        bgmRef.current.loop = true;
+        bgmRef.current.volume = bgmVolume;
+        bgmRef.current.play().catch(e => console.log("BGM Play Error:", e));
+      }
+    }
+  }, [gameState?.bgmFile, bgmVolume]);
 
-        // 🍏 레프를 사용하여 항상 최상 최신 볼륨 참조
-        const vol = volumeRef.current;
-        gainNode.gain.setValueAtTime(vol * 0.15, audioCtx.currentTime + delay);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.1);
+  // 🍏 [페이즈/카드 변화에 따른 효과음 트리거]
+  const prevPhase = useRef('');
+  const prevCardCount = useRef(0);
+  useEffect(() => {
+    if (!gameState) return;
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
+    // 1. 셔플 사운드 (프리플랍 시작 시)
+    if (gameState.phase === '프리플랍' && prevPhase.current !== '프리플랍') {
+      playSFX('shuffle_card.mp3');
+    }
 
-        oscillator.start(audioCtx.currentTime + delay);
-        oscillator.stop(audioCtx.currentTime + delay + 0.1);
-      };
-      for (let i = 0; i < Math.min(count, 5); i++) playSingle(i * 0.05);
-    } catch (e) { }
-  }, [localVolume]);
+    // 2. 카드 딜링 사운드 (커뮤니티 카드 추가 시)
+    const currentCount = gameState.communityCards?.length || 0;
+    if (currentCount > prevCardCount.current) {
+      if (currentCount === 3 && prevCardCount.current === 0) {
+        // 플랍 (3장 연속)
+        playSFX('card_dealing.mp3');
+        setTimeout(() => playSFX('card_dealing.mp3'), 200);
+        setTimeout(() => playSFX('card_dealing.mp3'), 400);
+      } else {
+        // 턴, 리버 (1장)
+        playSFX('card_dealing.mp3');
+      }
+    }
+
+    prevPhase.current = gameState.phase;
+    prevCardCount.current = currentCount;
+  }, [gameState?.phase, gameState?.communityCards?.length, playSFX]);
 
   const playTTS = (text) => {
     try {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       // 🍏 효과음 볼륨과 연동 (0.0 ~ 1.0)
-      u.volume = volumeRef.current;
+      u.volume = sfxVolume;
       const voices = speechSynthesis.getVoices();
       u.voice = voices.find(v => v.name.includes('Google') && v.lang.includes('en')) || voices.find(v => v.lang.includes('en')) || null;
       speechSynthesis.speak(u);
@@ -309,12 +358,18 @@ function GameRoom({ userInfo, setUserInfo }) {
 
     const handleDealPrivateCards = (cards) => setMyCards(cards);
 
-    const handlePlayerActionNotification = (data) => {
+    socket.on('playerActionNotification', ({ nickname, action, label, amount }) => {
+      // 🍏 칩 효과음 재생 (콜, 레이즈 시 랜덤하게 1~3 중 하나)
+      if (action === '콜' || action === '레이즈' || action === '올인') {
+        const randIdx = Math.floor(Math.random() * 3) + 1;
+        playSFX(`chip_sound${randIdx}.mp3`);
+      }
+
       const gs = gameStateRef.current; // 🍏 클로저 방지를 위해 Ref 사용
       if (!gs || !gs.players) return;
 
       // 액션 플레이어 위치 찾기
-      const pIdx = gs.players.findIndex(p => p.nickname === data.nickname);
+      const pIdx = gs.players.findIndex(p => p.nickname === nickname);
       const myIdxLocal = gs.players.findIndex(p => p.nickname === userInfo?.nickname);
 
       let relIdx = 0;
@@ -329,9 +384,9 @@ function GameRoom({ userInfo, setUserInfo }) {
 
       const newBubble = {
         id,
-        nickname: data.nickname,
-        label: data.label,
-        action: data.action,
+        nickname,
+        label,
+        action,
         x: offset.x,
         y: offset.y
       };
@@ -340,7 +395,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       setTimeout(() => {
         setActionBubbles(prev => prev.filter(b => b.id !== id));
       }, 2000);
-    };
+    });
 
     const handleJoinRoomError = (data) => {
       alert(data.message || '방에 입장할 수 없습니다.');
@@ -991,16 +1046,20 @@ function GameRoom({ userInfo, setUserInfo }) {
 
             <div className="settings-body">
               <section className="settings-section">
-                <label>🔊 효과음 볼륨 ({Math.round(localVolume * 100)}%)</label>
+                <label>🎵 배경음(BGM) 볼륨 ({Math.round(bgmVolume * 100)}%)</label>
                 <input
                   type="range" min="0" max="1" step="0.01"
-                  value={localVolume}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    setLocalVolume(v);
-                    volumeRef.current = v;
-                    localStorage.setItem('poker_volume', v);
-                  }}
+                  value={bgmVolume}
+                  onChange={(e) => setBgmVolume(Number(e.target.value))}
+                />
+              </section>
+
+              <section className="settings-section">
+                <label>🔊 효과음(SFX) 볼륨 ({Math.round(sfxVolume * 100)}%)</label>
+                <input
+                  type="range" min="0" max="1" step="0.01"
+                  value={sfxVolume}
+                  onChange={(e) => setSfxVolume(Number(e.target.value))}
                 />
               </section>
 
