@@ -491,6 +491,15 @@ function GameRoom({ userInfo, setUserInfo }) {
     socket.emit('rebuyDecision', { roomId: Number(roomId), nickname: userInfo?.nickname, decision });
   };
 
+  // 🍏 팟 칩들의 시각적 위치 랜덤화 (메모이제이션으로 깜빡임 방지)
+  const chipPositions = useMemo(() => {
+    return Array.from({ length: 100 }, () => ({
+      dx: Math.random() * 80 - 40,
+      dy: Math.random() * 80 - 40,
+      rot: Math.random() * 360
+    }));
+  }, []);
+
   const potChips = useMemo(() => {
     if (!gameState) return [];
     const pot = gameState.pot || 0;
