@@ -638,7 +638,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       <div className="game-main-area">
 
         <div className="mini-chat-container" onClick={() => { setShowChatModal(true); setHasNewMessage(false); }}>
-          {chatLogs.slice(isMobile ? -1 : -3).length > 0 ? chatLogs.slice(isMobile ? -1 : -3).map((log, i) => (
+          {chatLogs.slice(isMobile ? -2 : -3).length > 0 ? chatLogs.slice(isMobile ? -2 : -3).map((log, i) => (
             <div key={i} className={`mini-chat-line ${log.sender === '시스템' ? 'sys' : ''}`}>
               {log.sender === '시스템' ? log.text : `${log.sender}: ${log.text}`}
             </div>
@@ -655,7 +655,7 @@ function GameRoom({ userInfo, setUserInfo }) {
               left: isMobile ? '44%' : '48%',
               transform: 'translate(-50%, -50%)',
               width: isMobile ? '460px' : '710px',
-              height: isMobile ? '670px' : '462px',
+              height: isMobile ? '640px' : '462px', // 🃏 모바일 높이 약 30px 축소 (670px -> 640px)
               borderRadius: isMobile ? '180px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
