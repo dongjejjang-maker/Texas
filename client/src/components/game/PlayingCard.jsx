@@ -30,6 +30,10 @@ const PlayingCard = ({ card, hidden = false, className = "", style = {} }) => {
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '40px', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
           {suit}
         </div>
+        {/* 🍏 오른쪽 하단에도 숫자 추가 (사용자 요청: 뒤집지 않고 똑바로) */}
+        <div style={{ position: 'absolute', bottom: '5px', right: '6px', fontSize: '23px', fontWeight: 'bold', lineHeight: 0.9 }}>
+          {rank}
+        </div>
       </div>
     </div>
   );
