@@ -110,6 +110,7 @@ function GameRoom({ userInfo, setUserInfo }) {
   
   const bgmRef = useRef(new Audio());
   const sfxRef = useRef({}); // 효과음 객체 캐시용
+  const containerRef = useRef(null); // 🍏 테이블 컨테이너 참조 추가
   
   useEffect(() => {
     localStorage.setItem('poker_bgm_volume', bgmVolume.toString());
