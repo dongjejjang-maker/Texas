@@ -121,6 +121,22 @@ function GameRoom({ userInfo, setUserInfo }) {
     localStorage.setItem('poker_sfx_volume', sfxVolume.toString());
   }, [sfxVolume]);
 
+  // 🍏 iOS Safari 등에서 TTS 기능을 활성화(Unlock)하기 위한 빈 소리 재생 로직
+  const unlockTTS = () => {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance('');
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+    console.log('TTS Unlocked for iOS');
+    // 한 번만 실행되도록 이벤트 리스너 제거용으로도 사용 가능
+  };
+
+  useEffect(() => {
+    // 사용자가 방에 들어왔을 때 첫 클릭 시 TTS 잠금 해제
+    window.addEventListener('click', unlockTTS, { once: true });
+    return () => window.removeEventListener('click', unlockTTS);
+  }, []);
+
   const volumeRef = useRef(0.5); // 하위 호환용 (필요시 제거 가능)
 
   const gameStateRef = useRef(null); // 🍏 리스너 내 최신 상태 참조용
@@ -422,6 +438,12 @@ function GameRoom({ userInfo, setUserInfo }) {
       socket.off('chatMessage', handleChatMessage);
       socket.off('dealPrivateCards', handleDealPrivateCards);
       socket.off('joinRoomError', handleJoinRoomError);
+
+      // 🍏 방을 나갈 때 BGM 즉시 중단 및 리소스 해제
+      if (bgmRef.current) {
+        bgmRef.current.pause();
+        bgmRef.current.src = '';
+      }
     };
   }, [roomId, userInfo?.nickname]);
 
