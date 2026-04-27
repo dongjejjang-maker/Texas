@@ -621,6 +621,9 @@ app.post('/api/rooms', (req, res) => {
     roomsDB.push(newRoom);
     console.log(`[CREATE_ROOM_DEBUG] Created Room ID: ${newRoom.id}, Title: ${finalTitle}, SessionId: ${sessionId}`);
 
+    // 🎯 방 생성 시 첫 BGM 선정 (연속 재생용)
+    const initialBgm = BGM_LIST[Math.floor(Math.random() * BGM_LIST.length)];
+
     gameStates[newRoom.id] = {
         roomId: newRoom.id,
         players: [], 
@@ -631,6 +634,7 @@ app.post('/api/rooms', (req, res) => {
         turnIndex: 0,
         dealerIndex: 0,
         currentBet: 0,
+        bgmFile: initialBgm, // 🍏 초기 BGM 설정
         isBlockingAction: false,
         isAutoMode: false, // 🍏 서버 사이드 자동 진행 모드
         autoStartDelay: 0,
@@ -1045,6 +1049,22 @@ io.on('connection', (socket) => {
         io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '⚙️ 방 설정이 업데이트되었습니다.' });
         io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
     });
+
+    // 🍏 [신규] 다음 BGM 요청 처리 (현재 곡이 종료되었을 때)
+    socket.on('requestNextBGM', ({ roomId }) => {
+        const gs = gameStates[roomId];
+        if (!gs) return;
+
+        // 랜덤하게 다음 곡 선정 (현재 곡과 다른 곡 우선)
+        let nextBgm = BGM_LIST[Math.floor(Math.random() * BGM_LIST.length)];
+        if (nextBgm === gs.bgmFile && BGM_LIST.length > 1) {
+            nextBgm = BGM_LIST.find(b => b !== gs.bgmFile);
+        }
+        
+        gs.bgmFile = nextBgm;
+        console.log(`[ROOM ${roomId}] BGM Changed to: ${nextBgm}`);
+        io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
+    });
 });
 
 function progressGameStage(gs, roomId) {
@@ -1401,9 +1421,7 @@ function initiateNextHand(roomId) {
         }
         gs.lastAction = "프리플랍 시작";
 
-        // 🍏 판이 시작될 때마다 BGM을 랜덤하게 교체 (동기화용)
-        const randomBgm = BGM_LIST[Math.floor(Math.random() * BGM_LIST.length)];
-        gs.bgmFile = randomBgm;
+        // 🍏 매 판 시작 시 BGM 교체 로직 삭제 (연속 재생 유지)
 
         if (gs.isBlockingAction) {
             console.log(`[ROOM ${roomId}] Game is blocked (e.g. Rebuy decision).`);

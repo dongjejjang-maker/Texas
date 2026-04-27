@@ -114,8 +114,20 @@ function GameRoom({ userInfo, setUserInfo }) {
   
   useEffect(() => {
     localStorage.setItem('poker_bgm_volume', bgmVolume.toString());
-    if (bgmRef.current) bgmRef.current.volume = bgmVolume;
-  }, [bgmVolume]);
+    if (bgmRef.current) {
+      bgmRef.current.volume = bgmVolume;
+      
+      // 🍏 BGM이 끝나면 다음 곡을 서버에 요청하는 로직
+      bgmRef.current.onended = () => {
+        // 중복 요청 방지를 위해 현재 방의 첫 번째 플레이어(방장 역할)만 요청
+        const firstActivePlayer = gameStateRef.current?.players?.find(p => p.socketId !== null);
+        if (firstActivePlayer?.nickname === userInfo?.nickname) {
+          console.log("BGM Ended. Requesting next song...");
+          socket.emit('requestNextBGM', { roomId: Number(roomId) });
+        }
+      };
+    }
+  }, [bgmVolume, roomId, userInfo?.nickname]);
 
   useEffect(() => {
     localStorage.setItem('poker_sfx_volume', sfxVolume.toString());
