@@ -381,6 +381,16 @@ io.on('connection', (socket) => {
                 io.emit('lobbyUpdate', roomsDB);
             }
 
+            // 🍏 [보강] 자동 시작 타이머 중 플레이어가 나갔을 때 인원 체크하여 타이머 중지
+            const activeCount = gs.players.filter(p => p.socketId !== null && p.chips > 0).length;
+            if (activeCount < 2 && gs.isAutoMode && gs.autoStartTimer) {
+                clearTimeout(gs.autoStartTimer);
+                gs.autoStartTimer = null;
+                gs.isAutoMode = false;
+                io.to(`room_${rid}`).emit('chatMessage', { sender: '시스템', text: '🔔 참여 인원이 부족하여 자동 시작이 취소되었습니다.' });
+                io.to(`room_${rid}`).emit('updateGameState', getPublicGameState(gs));
+            }
+
             if (p && gs.phase !== '대기 중' && !gs.phase.includes('종료')) {
                 if (gs.players[gs.turnIndex] === p || gs.turnNickname === p.nickname) {
                     p.hasActed = true;
@@ -523,11 +533,9 @@ io.on('connection', (socket) => {
         if (!gs || gs.isBlockingAction) return;
 
         const player = gs.players[gs.turnIndex];
-        if (!player) {
-            console.error(`⚠️ [ACTION ERROR] Room ${roomId} has invalid turnIndex: ${gs.turnIndex}`);
-            gs.turnIndex = 0; // 강제 복구 시도
-            io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
-            return;
+        if (!player || player.spectator) {
+            console.warn(`⚠️ [ACTION BLOCK] Spectator or invalid player tried action: ${nickname}`);
+            return; // 🍏 관전자는 절대로 액션 불가 (칩 증발 및 논리 오류 방지)
         }
         if (player.nickname !== nickname) return;
 
