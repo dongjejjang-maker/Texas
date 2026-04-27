@@ -955,8 +955,22 @@ io.on('connection', (socket) => {
         let uIdx = users.findIndex(u => u.nickname === nickname);
         if (uIdx > -1) {
             users[uIdx].rebuyCount = (users[uIdx].rebuyCount || 0) + 1;
+            users[uIdx].chips = player.chips; // 🍏 칩 정보 즉시 동기화
             player.rebuyCount = users[uIdx].rebuyCount;
-            saveDB(users, [users[uIdx]]); // 🍏 변경된 유저만 업데이트
+            saveDB(users, [users[uIdx]]); 
+
+            // 🎯 세션 정보 즉시 업데이트
+            if (users[uIdx].currentSessionId) {
+                const session = sessionsDB.find(s => s.id === users[uIdx].currentSessionId);
+                if (session) {
+                    const participant = session.participants.find(pt => pt.linkedUserId === users[uIdx].id);
+                    if (participant) {
+                        participant.chips = player.chips;
+                        participant.rebuyCount = users[uIdx].rebuyCount;
+                        saveSessionDB(sessionsDB);
+                    }
+                }
+            }
         }
 
         io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 님이 참여를 예약하셨습니다. (다음 판부터 참여)` });
@@ -980,8 +994,22 @@ io.on('connection', (socket) => {
             let uIdx = users.findIndex(u => u.nickname === nickname);
             if (uIdx > -1) {
                 users[uIdx].rebuyCount = (users[uIdx].rebuyCount || 0) + 1;
+                users[uIdx].chips = player.chips; // 🍏 칩 정보 즉시 동기화
                 player.rebuyCount = users[uIdx].rebuyCount;
-                saveDB(users, [users[uIdx]]); // 🍏 변경된 유저만 업데이트
+                saveDB(users, [users[uIdx]]); 
+
+                // 🎯 세션 정보 즉시 업데이트
+                if (users[uIdx].currentSessionId) {
+                    const session = sessionsDB.find(s => s.id === users[uIdx].currentSessionId);
+                    if (session) {
+                        const participant = session.participants.find(pt => pt.linkedUserId === users[uIdx].id);
+                        if (participant) {
+                            participant.chips = player.chips;
+                            participant.rebuyCount = users[uIdx].rebuyCount;
+                            saveSessionDB(sessionsDB);
+                        }
+                    }
+                }
             }
             io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 님이 다음 판 참여를 예약하셨습니다.` });
         } else {

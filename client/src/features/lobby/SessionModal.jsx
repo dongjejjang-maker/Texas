@@ -389,8 +389,8 @@ const SessionModal = ({ userInfo, setUserInfo, onClose }) => {
             )
           )}
 
-          {/* 온라인 & 활성: 종료 버튼 */}
-          {isOnline && isActive && (
+          {/* 활성 세션: 종료 버튼 (온라인/오프라인 공통) */}
+          {isActive && (
             <button className="premium-btn danger-btn" onClick={handleEnd} disabled={loading}>세션 종료</button>
           )}
 
