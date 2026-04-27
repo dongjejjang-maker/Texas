@@ -320,6 +320,15 @@ function createDeck() {
 
 // --- API Router ---
 
+// 🎯 [신규 API] 사용자 정보 조회 (최신 칩, 리바인 정보 동기화용)
+app.get('/api/users/:id', (req, res) => {
+    const user = usersDB.find(u => u.id === req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+    // 비밀번호 등 민감정보 제외하고 반환
+    const { password, ...safeUser } = user;
+    res.json({ success: true, user: safeUser });
+});
+
 // --- [수정] 회원가입 API (Async/DB 연동) ---
 app.post('/api/signup', async (req, res) => {
     const { id, password, nickname } = req.body;

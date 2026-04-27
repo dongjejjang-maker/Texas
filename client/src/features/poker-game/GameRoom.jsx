@@ -337,9 +337,9 @@ function GameRoom({ userInfo, setUserInfo }) {
       if (!showSettings && newState.settings) {
         setTempSettings(newState.settings);
       }
-      const me = newState.players.find(p => p.nickname === userInfo?.nickname);
-      if (me && me.rebuyCount !== userInfo.rebuyCount) {
-        setUserInfo(prev => ({ ...prev, rebuyCount: me.rebuyCount }));
+      const me = newState.players.find(p => p.nickname === userInfo.nickname);
+      if (me && (me.rebuyCount !== userInfo.rebuyCount || me.chips !== userInfo.chips)) {
+        setUserInfo(prev => ({ ...prev, rebuyCount: me.rebuyCount, chips: me.chips }));
       }
       if (newState.turnNickname !== userInfo?.nickname) {
         setShowRaisePanel(false);

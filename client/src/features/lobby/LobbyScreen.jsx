@@ -22,6 +22,20 @@ const LobbyScreen = ({ userInfo, setUserInfo }) => {
   const [isChipEditing, setIsChipEditing] = useState(false);
 
   useEffect(() => {
+    // 🎯 로비 진입 시 최신 사용자 정보(칩, 리바인) 동기화
+    if (userInfo?.id) {
+      fetch(`${SERVER_URL}/api/users/${userInfo.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setUserInfo(prev => ({ ...prev, ...data.user }));
+            // 로컬 스토리지도 최신화
+            const saved = JSON.parse(localStorage.getItem('holdem_user') || '{}');
+            localStorage.setItem('holdem_user', JSON.stringify({ ...saved, ...data.user }));
+          }
+        });
+    }
+
     fetch(`${SERVER_URL}/api/rooms`)
       .then(res => res.json())
       .then(d => { if (d.success) setRooms(d.rooms); });

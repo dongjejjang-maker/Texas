@@ -20,7 +20,11 @@ const SessionModal = ({ userInfo, setUserInfo, onClose }) => {
     try {
       const res = await fetch(`${SERVER_URL}/api/sessions`);
       const data = await res.json();
-      if (data.success) setSessions(data.sessions);
+      if (data.success) {
+        // 🍏 최신 세션이 위로 오도록 정렬 (createdAt 기준 내림차순)
+        const sorted = data.sessions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setSessions(sorted);
+      }
     } catch (e) { console.error('세션 목록 로드 실패:', e); }
   };
 
