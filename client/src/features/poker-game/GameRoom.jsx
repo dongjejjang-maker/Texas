@@ -185,14 +185,15 @@ function GameRoom({ userInfo, setUserInfo }) {
 
   useEffect(() => {
     const isSpectator = !!myInfo?.spectator;
-    if (isSpectator && !enteredSpectatorRef.current) {
+    // 🍏 [수정] 관전자이면서 동시에 보유 칩이 0일 때만 리바인 버튼 표시
+    if (isSpectator && !enteredSpectatorRef.current && (myInfo?.chips === 0)) {
       enteredSpectatorRef.current = true;
       setShowRebuyBtn(true);
-    } else if (!isSpectator) {
+    } else if (!isSpectator || (myInfo?.chips > 0)) {
       enteredSpectatorRef.current = false;
       setShowRebuyBtn(false);
     }
-  }, [myInfo?.spectator]);
+  }, [myInfo?.spectator, myInfo?.chips]);
 
   useEffect(() => {
     const phase = gameState?.phase || '';

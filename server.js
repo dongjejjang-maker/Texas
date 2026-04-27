@@ -613,6 +613,12 @@ io.on('connection', (socket) => {
         if (!gs) return;
         const player = gs.players.find(p => p.nickname === nickname);
         if (!player || !player.spectator) return;
+        
+        // 🍏 [보강] 보유 칩이 0보다 크면 리바인 불가 (나갔다 들어왔을 때 등 방지)
+        if (player.chips > 0) {
+            socket.emit('chatMessage', { sender: '시스템', text: '이미 보유 칩이 있어 리바인이 불가능합니다.' });
+            return;
+        }
 
         let roomInfo = roomsDB.find(r => r.id === roomId);
         player.chips = roomInfo.buyIn;
