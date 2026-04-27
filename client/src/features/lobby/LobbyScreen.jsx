@@ -11,8 +11,8 @@ const LobbyScreen = ({ userInfo, setUserInfo }) => {
   const [title, setTitle] = useState('한 판 붙자!');
   const [buyIn, setBuyIn] = useState(20000);
   const [maxPlayers, setMaxPlayers] = useState(6);
-  const [sb, setSb] = useState(100);
-  const [bb, setBb] = useState(200);
+  const [sb, setSb] = useState(300);
+  const [bb, setBb] = useState(500);
   const [newNickname, setNewNickname] = useState('');
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(false);
