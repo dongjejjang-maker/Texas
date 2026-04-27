@@ -1853,20 +1853,19 @@ input[type="range"].raise-slider {
 /* 💬 미니 채팅창 스타일 (모바일 시인성 확보) */
 .mini-chat-container {
   position: absolute;
-  top: 65px; /* 헤더 바로 아래 */
-  left: 15px;
+  top: 54px; /* 헤더 바로 아래에 딱 붙임 */
+  left: 10px;
   z-index: 150;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 3px 10px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  max-width: 180px;
+  max-width: 220px;
   cursor: pointer;
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
 .mini-chat-line {

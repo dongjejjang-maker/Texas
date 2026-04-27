@@ -638,7 +638,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       <div className="game-main-area">
 
         <div className="mini-chat-container" onClick={() => { setShowChatModal(true); setHasNewMessage(false); }}>
-          {chatLogs.slice(-3).length > 0 ? chatLogs.slice(-3).map((log, i) => (
+          {chatLogs.slice(-1).length > 0 ? chatLogs.slice(-1).map((log, i) => (
             <div key={i} className={`mini-chat-line ${log.sender === '시스템' ? 'sys' : ''}`}>
               {log.sender === '시스템' ? log.text : `${log.sender}: ${log.text}`}
             </div>
