@@ -497,8 +497,24 @@ function GameRoom({ userInfo, setUserInfo }) {
   const callText = callAmount === 0 ? '체크' : isAllInCall ? `올인 (${myInfo?.chips})` : `콜 (${callAmount})`;
 
   const handleKeyDown = (e) => {
+    // 🍏 1. 채팅창 관련 단축키 (차례나 커서 활성화 여부와 무관하게 최우선 처리)
+    if (showChatModal && e.key === 'Escape') {
+      e.preventDefault();
+      setShowChatModal(false);
+      return;
+    }
+
+    if (!showChatModal && !showRaisePanel && e.key === 'Enter') {
+      e.preventDefault();
+      setShowChatModal(true);
+      setHasNewMessage(false);
+      return;
+    }
+
+    // 🍏 2. 게임 액션 단축키 (커서 활성화 시 중단, 내 차례일 때만 작동)
     if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
     if (!isMyTurn) return;
+
     if (showRaisePanel) {
       if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -514,12 +530,6 @@ function GameRoom({ userInfo, setUserInfo }) {
         e.preventDefault();
         setShowRaisePanel(false);
       }
-    } else if (showChatModal) {
-      // 🍏 채팅창이 열려있을 때 Esc로 닫기
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setShowChatModal(false);
-      }
     } else {
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -533,11 +543,6 @@ function GameRoom({ userInfo, setUserInfo }) {
           setRaiseAmount(Math.min(minRaise, myInfo?.chips || 0));
           setShowRaisePanel(true);
         }
-      } else if (e.key === 'Enter') {
-        // 🍏 레이즈 패널이 없을 때 엔터 누르면 채팅창 열기
-        e.preventDefault();
-        setShowChatModal(true);
-        setHasNewMessage(false);
       }
     }
   };
