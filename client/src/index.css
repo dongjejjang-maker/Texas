@@ -1754,7 +1754,7 @@ input[type="range"].raise-slider {
   /* 🍏 초소형 수직형 알약 매트 (물리적 통합: 수동 좌표 제거) */
   .pill-table {
     width: 430px !important;
-    height: 480px !important; /* 🃏 100px 대폭 축소 (580px -> 480px) */
+    height: 520px !important; /* 🃏 다시 40px 확대 (480px -> 520px) */
     border-radius: 170px !important;
     background: radial-gradient(circle at center, #065f46 0%, #064e3b 100%) !important;
     border: 4px solid rgba(0, 0, 0, 0.4) !important;
