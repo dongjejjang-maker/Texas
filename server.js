@@ -933,6 +933,17 @@ function awardPot(gs, roomId, winnersOrPlayers) {
 
     // 🍏 서버 사이드 자동 진행 체크
     if (gs.isAutoMode) {
+        // [보강] 게임 가능 인원이 2명 미만이면 자동 진행 카운트다운을 하지 않음
+        const activeCount = gs.players.filter(p => !p.spectator && p.chips > 0).length;
+        if (activeCount < 2) {
+            gs.isAutoMode = false;
+            if (gs.autoStartTimer) clearTimeout(gs.autoStartTimer);
+            gs.autoStartTimer = null;
+            io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: '🔔 참여 인원이 부족하여 자동 시작이 중지되었습니다.' });
+            io.to(`room_${roomId}`).emit('updateGameState', getPublicGameState(gs));
+            return;
+        }
+
         if (gs.autoStartTimer) clearTimeout(gs.autoStartTimer);
         gs.autoStartTimer = setTimeout(() => {
             if (gs.isAutoMode) {
