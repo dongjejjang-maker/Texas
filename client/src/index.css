@@ -1850,10 +1850,10 @@ input[type="range"].raise-slider {
   }
 }
 
-/* 💬 미니 채팅창 스타일 (모바일 시인성 확보) */
+/* 💬 미니 채팅창 스타일 (헤더 바로 밑 밀착) */
 .mini-chat-container {
   position: absolute;
-  top: 54px; /* 헤더 바로 아래에 딱 붙임 */
+  top: 0px; /* 헤더 바로 밑에 찰싹 붙임 */
   left: 10px;
   z-index: 150;
   background: rgba(15, 23, 42, 0.5);
