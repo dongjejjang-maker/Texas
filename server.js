@@ -382,7 +382,8 @@ io.on('connection', (socket) => {
             }
 
             // 🍏 [보강] 자동 시작 타이머 중 플레이어가 나갔을 때 인원 체크하여 타이머 중지
-            const activeCount = gs.players.filter(p => p.socketId !== null && p.chips > 0).length;
+            // 실제 게임 참여 가능한(관전 아님 & 칩 있음 & 소켓 연결됨) 인원이 2명 미만이면 취소
+            const activeCount = gs.players.filter(p => p.socketId !== null && p.chips > 0 && !p.spectator).length;
             if (activeCount < 2 && gs.isAutoMode && gs.autoStartTimer) {
                 clearTimeout(gs.autoStartTimer);
                 gs.autoStartTimer = null;
@@ -544,6 +545,13 @@ io.on('connection', (socket) => {
             gs.lastAction = `[${nickname}] 폴드`;
             io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 폴드` });
         }
+        else if (action === '콜') {
+            let toCall = Math.min(gs.currentBet - player.betAmount, player.chips);
+            player.chips -= toCall;
+            player.betAmount += toCall;
+            player.totalContribution = (player.totalContribution || 0) + toCall;
+            gs.pot += toCall;
+            
             if (toCall === 0) {
                 gs.lastAction = `[${nickname}] 체크`;
                 io.to(`room_${roomId}`).emit('chatMessage', { sender: '시스템', text: `[${nickname}] 체크` });
