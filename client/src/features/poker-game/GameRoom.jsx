@@ -515,18 +515,6 @@ function GameRoom({ userInfo, setUserInfo }) {
     return chips;
   }, [gameState?.pot]);
 
-  const chipPositions = useMemo(() => {
-    if (potChips.length === 0) return [];
-    return potChips.map((_, i) => {
-      const angle = (i * 137.508) % 360;
-      const dist = 8 + (i * 11) % 38;
-      const dx = Math.cos(angle * Math.PI / 180) * dist;
-      const dy = Math.sin(angle * Math.PI / 180) * dist * 0.6;
-      const rot = (i * 47) % 360;
-      return { dx, dy, rot };
-    });
-  }, [potChips.length]);
-
   useEffect(() => {
     if (!gameState?.players) return;
     const newAnims = [];
