@@ -1830,6 +1830,17 @@ input[type="range"].raise-slider {
     transform-origin: center;
     margin-bottom: 10px !important;
   }
+
+  /* 💬 모바일 미니 채팅창 슬림화 (세로폭 절반) */
+  .mini-chat-container {
+    padding: 1px 8px !important; 
+    top: 0px !important;
+    border-radius: 2px !important;
+  }
+  .mini-chat-line {
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+  }
 }
 
 /* 🍯 공통 칩 시스템 보강 스타일 */
