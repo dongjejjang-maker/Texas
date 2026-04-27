@@ -369,9 +369,9 @@ body {
 .community-cards {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 5px;
-  transform: scale(0.7) !important; /* 🃏 내 패와 똑같이 0.7배로 작게 축소 */
+  gap: 14px;
+  margin-bottom: 8px;
+  transform: scale(0.9) !important; /* 🃏 0.7에서 30% 정도 키운 0.9로 조정 */
   transform-origin: center;
 }
 
@@ -1823,12 +1823,12 @@ input[type="range"].raise-slider {
     bottom: 160px !important;
   }
 
-  /* 🃏 모바일 커뮤니티 카드 축소 (내 패와 동일하게) */
+  /* 🃏 모바일 커뮤니티 카드 적정 크기 조정 */
   .community-cards {
-    gap: 8px !important;
-    transform: scale(0.7) !important; /* 내 패와 동일한 축소 비율 */
+    gap: 10px !important;
+    transform: scale(0.9) !important; /* 0.7에서 30% 확대 */
     transform-origin: center;
-    margin-bottom: 5px !important;
+    margin-bottom: 10px !important;
   }
 }
 
