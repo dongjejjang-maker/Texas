@@ -1849,3 +1849,36 @@ input[type="range"].raise-slider {
     transform: translateY(-50%) scale(1.1) !important;
   }
 }
+
+/* 💬 미니 채팅창 스타일 (모바일 시인성 확보) */
+.mini-chat-container {
+  position: absolute;
+  top: 65px; /* 헤더 바로 아래 */
+  left: 15px;
+  z-index: 150;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 180px;
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mini-chat-line {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.mini-chat-line.sys {
+  color: #facc15;
+  font-weight: bold;
+}
