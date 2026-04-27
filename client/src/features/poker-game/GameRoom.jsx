@@ -67,14 +67,14 @@ const DESKTOP_OFFSETS = [
 ];
 
 const MOBILE_OFFSETS = [
-  { x: 0, y: 335 },       // 0: 6시 (나)
-  { x: -177, y: 282 },   // 1: 7시 30분
+  { x: 0, y: 240 },       // 0: 6시 (나) - 335 -> 240
+  { x: -177, y: 190 },   // 1: 7시 30분 - 282 -> 190
   { x: -230, y: 0 },     // 2: 9시
-  { x: -177, y: -282 },  // 3: 10시 30분
-  { x: 0, y: -335 },     // 4: 12시
-  { x: 177, y: -282 },   // 5: 1시 30분
+  { x: -177, y: -190 },  // 3: 10시 30분
+  { x: 0, y: -240 },     // 4: 12시
+  { x: 177, y: -190 },   // 5: 1시 30분
   { x: 230, y: 0 },      // 6: 3시
-  { x: 177, y: 282 },    // 7: 4시 30분
+  { x: 177, y: 190 },    // 7: 4시 30분
 ];
 
 function GameRoom({ userInfo, setUserInfo }) {
@@ -655,7 +655,7 @@ function GameRoom({ userInfo, setUserInfo }) {
               left: isMobile ? '44%' : '48%',
               transform: 'translate(-50%, -50%)',
               width: isMobile ? '460px' : '710px',
-              height: isMobile ? '610px' : '462px', // 🃏 모바일 높이 추가 30px 축소 (640px -> 610px)
+              height: isMobile ? '510px' : '462px', // 🃏 모바일 높이 100px 대폭 축소 (610px -> 510px)
               borderRadius: isMobile ? '180px' : '231px',
               backgroundColor: 'rgba(0,0,0,0.2)',
               border: '6px solid rgba(255,255,255,0.15)',
