@@ -610,20 +610,32 @@ function GameRoom({ userInfo, setUserInfo }) {
   const visualPlayerRanks = useMemo(() => {
     if (!gameState?.players) return {};
     const commCards = (gameState.communityCards || []).slice(0, visualBoardCount);
-    if (commCards.length < 3) return {};
 
     const ranks = {};
     const solverCommCards = commCards.map(FORMAT_CARD_FOR_SOLVER);
 
     gameState.players.forEach(p => {
-      // 본인이 아니더라도 카드가 공개된 상태라면 실시간 계산
-      if (p.privateCards && p.privateCards.length === 2) {
+      const pCards = p.privateCards || (p.nickname === userInfo?.nickname ? myCards : []);
+      if (pCards && pCards.length === 2) {
         try {
-          const solverPlayerCards = p.privateCards.map(FORMAT_CARD_FOR_SOLVER);
-          const allCards = [...solverPlayerCards, ...solverCommCards];
-          if (allCards.length >= 5) {
-            const solved = Hand.solve(allCards);
-            ranks[p.nickname] = TRANSLATE_HAND(solved);
+          if (commCards.length >= 3) {
+            // 보드 카드가 3장 이상일 때 (정식 족보)
+            const solverPlayerCards = pCards.map(FORMAT_CARD_FOR_SOLVER);
+            const allCards = [...solverPlayerCards, ...solverCommCards];
+            if (allCards.length >= 5) {
+              const solved = Hand.solve(allCards);
+              ranks[p.nickname] = TRANSLATE_HAND(solved);
+            }
+          } else {
+            // 보드 카드가 0~2장일 때 (포켓 페어 등 기초 족보)
+            const r0 = pCards[0].slice(1);
+            const r1 = pCards[1].slice(1);
+            if (r0 === r1) ranks[p.nickname] = `(${r0 === '10' ? '10' : r0}) 원페어`;
+            else {
+              const ranks_order = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+              const top = ranks_order.indexOf(r0) > ranks_order.indexOf(r1) ? r0 : r1;
+              ranks[p.nickname] = `(${top === '10' ? '10' : top}) 하이카드`;
+            }
           }
         } catch (e) {
           ranks[p.nickname] = p.currentHandName;
@@ -633,7 +645,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       }
     });
     return ranks;
-  }, [gameState?.players, gameState?.communityCards, visualBoardCount]);
+  }, [gameState?.players, gameState?.communityCards, visualBoardCount, myCards, userInfo?.nickname]);
 
   useEffect(() => {
     if (!gameState?.players) return;
@@ -927,9 +939,6 @@ function GameRoom({ userInfo, setUserInfo }) {
               </div>
             </div>
 
-            {betAnimChips.map(c => (
-              <div key={c.id} className="bet-anim-chip" style={{ '--from-x': `${c.fromX}px`, '--from-y': `${c.fromY}px`, background: c.bg, border: `3px dashed ${c.border}` }} />
-            ))}
 
             {/* 🍏 기존 중앙 pot-chips-container 제거됨 (위 pot-display 내부로 이동) */}
 
@@ -1011,7 +1020,7 @@ function GameRoom({ userInfo, setUserInfo }) {
                             </div>
                             {/* 내 전용 실시간 족보 (카드 아래 위치) */}
                             <div className="local-hand-rank-box animate-fade-in">
-                              {visualPlayerRanks[player.nickname] || player.currentHandName || '분석 중...'}
+                              {visualPlayerRanks[player.nickname] || '분석 중...'}
                             </div>
                           </div>
                         </>
