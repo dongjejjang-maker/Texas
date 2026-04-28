@@ -447,15 +447,17 @@ function GameRoom({ userInfo, setUserInfo }) {
         else if (data.text.includes('콜')) { playActionSound('콜'); playChipSound(); }
         else if (data.text.includes('레이즈')) { playActionSound('레이즈'); playChipSound(); }
         else if (data.text.includes('올인')) { playActionSound('올인'); playChipSound(); }
-        else if (data.text.includes('체크')) { playActionSound('체크'); }
+        else if (data.text.includes('체크')) { playActionSound('체크'); playSFX('check_knock.mp3'); }
       }
     };
 
     const handleDealPrivateCards = (cards) => setMyCards(cards);
 
     socket.on('playerActionNotification', ({ nickname, action, label, amount }) => {
-      // 🍏 칩 효과음 재생 (콜, 레이즈 시 랜덤하게 1~3 중 하나)
-      if (action === '콜' || action === '레이즈' || action === '올인') {
+      // 🍏 칩 효과음 재생 (체크는 노크 소리, 나머지는 랜덤 칩 소리)
+      if (action === '체크' || label === '체크') {
+        playSFX('check_knock.mp3');
+      } else if (action === '콜' || action === '레이즈' || action === '올인') {
         const randIdx = Math.floor(Math.random() * 3) + 1;
         playSFX(`chip_sound${randIdx}.mp3`);
       }
