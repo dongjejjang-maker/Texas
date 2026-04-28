@@ -297,17 +297,6 @@ function GameRoom({ userInfo, setUserInfo }) {
     prevCardCount.current = currentCount;
   }, [gameState?.phase, gameState?.communityCards?.length, playSFX]);
 
-  const playTTS = (text) => {
-    try {
-      if (!window.speechSynthesis) return;
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'en-US';
-      u.volume = sfxVolume;
-      const voices = window.speechSynthesis.getVoices();
-      u.voice = voices.find(v => v.name.includes('Google') && v.lang.includes('en')) || voices.find(v => v.lang.includes('en')) || null;
-      window.speechSynthesis.speak(u);
-    } catch (e) { }
-  };
 
   const isMyTurn = gameState?.turnNickname === userInfo?.nickname && gameState?.phase !== '대기 중' && !gameState?.phase?.includes('종료') && !gameState?.isBlockingAction;
   const myInfo = gameState?.players?.find(p => p.nickname === userInfo?.nickname);
@@ -423,11 +412,11 @@ function GameRoom({ userInfo, setUserInfo }) {
         }
         lastProcessedMsgRef.current = { text: data.text, time: now };
 
-        if (data.text.includes('폴드')) { playTTS('Fold'); playChipSound(); }
-        else if (data.text.includes('콜')) { playTTS('Call'); playChipSound(); }
-        else if (data.text.includes('레이즈')) { playTTS('Raise'); playChipSound(); }
-        else if (data.text.includes('올인')) { playTTS('All In'); playChipSound(); }
-        else if (data.text.includes('체크')) { playTTS('Check'); }
+        if (data.text.includes('폴드')) { playActionSound('폴드'); playChipSound(); }
+        else if (data.text.includes('콜')) { playActionSound('콜'); playChipSound(); }
+        else if (data.text.includes('레이즈')) { playActionSound('레이즈'); playChipSound(); }
+        else if (data.text.includes('올인')) { playActionSound('올인'); playChipSound(); }
+        else if (data.text.includes('체크')) { playActionSound('체크'); }
       }
     };
 
