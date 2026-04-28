@@ -158,6 +158,7 @@ function GameRoom({ userInfo, setUserInfo }) {
   const [myCards, setMyCards] = useState([]);
   const [localHandName, setLocalHandName] = useState('');
   const [actionBubbles, setActionBubbles] = useState([]); // 🍏 액션 말풍선 상태
+  const [visualBoardCount, setVisualBoardCount] = useState(0); // 🍏 쇼다운 시 시각적으로 공개된 보드 카드 수
 
   // 레이즈 모달 상태
   const [showRaisePanel, setShowRaisePanel] = useState(false);
@@ -338,9 +339,26 @@ function GameRoom({ userInfo, setUserInfo }) {
     if (phase === '프리플랍' || phase === '대기 중') {
       revealedIndicesRef.current.clear();
       revealedPhaseRecordRef.current = {}; // 🍏 판이 새로 시작되면 기록 초기화
+      setVisualBoardCount(0); // 🍏 보드 카운트 초기화
+    } else if (!isEndPhase) {
+      // 🍏 게임 진행 중에는 실제 보드 카드 수를 그대로 따름
+      setVisualBoardCount(gameState?.communityCards?.length || 0);
+    } else if (enteringEndPhase) {
+      // 🎯 쇼다운/종료 페이즈 진입 시 순차적 오픈 연출
+      const startCount = preShowdownCardCountRef.current;
+      const finalCount = gameState?.communityCards?.length || 0;
+      setVisualBoardCount(startCount);
+
+      if (finalCount > startCount) {
+        for (let i = 1; i <= (finalCount - startCount); i++) {
+          setTimeout(() => {
+            setVisualBoardCount(startCount + i);
+          }, i * 800); // 0.8초 간격으로 한 장씩 족보 계산에 추가
+        }
+      }
     }
     prevPhaseRef.current = phase;
-  }, [gameState?.phase]);
+  }, [gameState?.phase, gameState?.communityCards?.length]);
 
   // 🍏 동기화된 자동 진행 (Auto Proceed) 시각적 연출 로직
   useEffect(() => {
@@ -495,7 +513,8 @@ function GameRoom({ userInfo, setUserInfo }) {
       return;
     }
 
-    const commCards = gameState?.communityCards || [];
+    // 🍏 [수정] 전체 카드가 아닌, 시각적으로 공개된 카드(visualBoardCount)만 사용하여 족보 계산
+    const commCards = (gameState?.communityCards || []).slice(0, visualBoardCount);
     try {
       if (commCards.length >= 3) {
         const solverMyCards = myCards.map(FORMAT_CARD_FOR_SOLVER);
@@ -505,6 +524,8 @@ function GameRoom({ userInfo, setUserInfo }) {
         if (allCards.length >= 5) {
           const solved = Hand.solve(allCards);
           if (solved) setLocalHandName(TRANSLATE_HAND(solved));
+        } else {
+          setLocalHandName(""); // 5장이 안 되면 족보명 표시 안 함
         }
       } else {
         // 프리플랍 등 보드 카드 부족 시 포켓 페어 체크
@@ -584,6 +605,35 @@ function GameRoom({ userInfo, setUserInfo }) {
     }
     return chips;
   }, [gameState?.pot]);
+
+  // 🍏 [신규] 모든 플레이어의 시각적 족보 실시간 계산 (쇼다운 연출용)
+  const visualPlayerRanks = useMemo(() => {
+    if (!gameState?.players) return {};
+    const commCards = (gameState.communityCards || []).slice(0, visualBoardCount);
+    if (commCards.length < 3) return {};
+
+    const ranks = {};
+    const solverCommCards = commCards.map(FORMAT_CARD_FOR_SOLVER);
+
+    gameState.players.forEach(p => {
+      // 본인이 아니더라도 카드가 공개된 상태라면 실시간 계산
+      if (p.privateCards && p.privateCards.length === 2) {
+        try {
+          const solverPlayerCards = p.privateCards.map(FORMAT_CARD_FOR_SOLVER);
+          const allCards = [...solverPlayerCards, ...solverCommCards];
+          if (allCards.length >= 5) {
+            const solved = Hand.solve(allCards);
+            ranks[p.nickname] = TRANSLATE_HAND(solved);
+          }
+        } catch (e) {
+          ranks[p.nickname] = p.currentHandName;
+        }
+      } else {
+        ranks[p.nickname] = p.currentHandName;
+      }
+    });
+    return ranks;
+  }, [gameState?.players, gameState?.communityCards, visualBoardCount]);
 
   useEffect(() => {
     if (!gameState?.players) return;
@@ -961,7 +1011,7 @@ function GameRoom({ userInfo, setUserInfo }) {
                             </div>
                             {/* 내 전용 실시간 족보 (카드 아래 위치) */}
                             <div className="local-hand-rank-box animate-fade-in">
-                              {localHandName || player.currentHandName || '분석 중...'}
+                              {visualPlayerRanks[player.nickname] || player.currentHandName || '분석 중...'}
                             </div>
                           </div>
                         </>
@@ -972,9 +1022,9 @@ function GameRoom({ userInfo, setUserInfo }) {
                             <PlayingCard card={player.privateCards[1]} className="mine" />
                           </div>
                           {/* 상대방 공개 족보 (카드 아래 위치) */}
-                          {player.currentHandName && (
+                          {(visualPlayerRanks[player.nickname] || player.currentHandName) && (
                             <div className="local-hand-rank-box animate-fade-in others">
-                              {player.currentHandName}
+                              {visualPlayerRanks[player.nickname] || player.currentHandName}
                             </div>
                           )}
                         </div>
