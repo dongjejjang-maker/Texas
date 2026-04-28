@@ -233,14 +233,23 @@ function GameRoom({ userInfo, setUserInfo }) {
   // 🍏 [개편] TTS 대신 준비된 MP3 액션 사운드 재생
   const playActionSound = (action) => {
     try {
-      const actionKey = action.toLowerCase();
-      // 지원하는 액션 파일 리스트
+      // 서버에서 오는 한글 액션을 영문 파일명으로 매핑
+      const actionMap = {
+        '콜': 'call',
+        '폴드': 'fold',
+        '체크': 'check',
+        '레이즈': 'raise',
+        '올인': 'allin',
+        '베트': 'bet'
+      };
+      
+      const actionKey = actionMap[action] || action.toLowerCase();
       const supportedActions = ['call', 'fold', 'check', 'raise', 'allin', 'bet'];
       
       if (supportedActions.includes(actionKey)) {
         const audio = new Audio(`/sound/action/${actionKey}.mp3`);
         audio.volume = sfxVolume;
-        audio.play().catch(e => console.warn('Action sound play failed:', e));
+        audio.play().catch(e => console.warn(`Action sound [${actionKey}] play failed:`, e));
       }
     } catch (e) {
       console.error('Action sound error:', e);
