@@ -998,7 +998,8 @@ function GameRoom({ userInfo, setUserInfo }) {
                 >
                   {player.betAmount > 0 && <div className="bet-chip-bubble">🪙 {player.betAmount}</div>}
                   <div className={`avatar-circle ${isActiveTurn ? 'active-turn' : ''} ${player.spectator ? 'spectator' : ''}`}>
-                    {isGameOver && winnerNicknames.includes(player.nickname) && (
+                    {/* 🍏 [수정] 마지막 카드까지 시각적으로 다 열렸을 때만 왕관 표시 */}
+                    {isGameOver && winnerNicknames.includes(player.nickname) && visualBoardCount === (gameState?.communityCards?.length || 0) && (
                       <div className="winner-crown-badge">👑</div>
                     )}
                     {player.role && <div className="role-badge">{player.role}</div>}
