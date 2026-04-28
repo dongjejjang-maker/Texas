@@ -240,8 +240,11 @@ function GameRoom({ userInfo, setUserInfo }) {
       const supportedActions = ['call', 'fold', 'check', 'raise', 'allin', 'bet'];
       
       if (supportedActions.includes(actionKey)) {
-        // 🔄 캐시 방지를 위해 버전 쿼리 추가
-        const audio = new Audio(`/sound/action/${actionKey}.mp3?v=${Date.now()}`);
+        // 🔄 체크일 경우 노크 소리, 나머지는 음성 MP3
+        const fileName = (actionKey === 'check') ? 'check_knock.mp3' : `${actionKey}.mp3`;
+        const filePath = (actionKey === 'check') ? `/sound/${fileName}` : `/sound/action/${fileName}`;
+        
+        const audio = new Audio(`${filePath}?v=${Date.now()}`);
         audio.volume = sfxVolume;
         audio.play().catch(e => console.warn(`Action sound [${actionKey}] play failed:`, e));
       }
@@ -447,7 +450,7 @@ function GameRoom({ userInfo, setUserInfo }) {
         else if (data.text.includes('콜')) { playActionSound('콜'); playChipSound(); }
         else if (data.text.includes('레이즈')) { playActionSound('레이즈'); playChipSound(); }
         else if (data.text.includes('올인')) { playActionSound('올인'); playChipSound(); }
-        else if (data.text.includes('체크')) { playActionSound('체크'); playSFX('check_knock.mp3'); }
+        else if (data.text.includes('체크')) { playActionSound('체크'); }
       }
     };
 
@@ -1112,7 +1115,7 @@ function GameRoom({ userInfo, setUserInfo }) {
       </div>
 
       {(gameState.isBlockingAction || amIDecidingRebuy) && (
-        <div className="blocking-overlay">
+        <div className="blocking-overlay" style={{ background: 'transparent' }}>
           {amIDecidingRebuy ? (
             <div className={`rebuy-box glass-panel ${gameState?.phase?.includes('종료') ? 'delayed-popup' : ''}`}>
               <h3>칩이 모두 소진되었습니다!</h3>
