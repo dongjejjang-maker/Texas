@@ -463,13 +463,13 @@ function GameRoom({ userInfo, setUserInfo }) {
       const finalAction = label === '체크' ? '체크' : action;
       playActionSound(finalAction);
 
-      // 🍏 칩 효과음 재생 (체크/폴드 상황에서는 절대 칩 소리가 나지 않게 차단)
-      const isCheck = (action === '체크' || label === '체크');
-      const isFold = (action === '폴드' || label === '폴드');
+      // 🍏 칩 효과음 재생 (철저하게 차단: 금액이 0원이거나 체크/폴드인 경우 절대 금지)
+      const isZeroAmount = (amount === 0);
+      const isCheckAction = (action?.includes('체크') || label?.includes('체크'));
+      const isFoldAction = (action?.includes('폴드') || label?.includes('폴드'));
 
-      if (isCheck || isFold) {
-        // 체크/폴드는 칩 소리 안 나게 함
-        // 체크의 경우 위 playActionSound(finalAction) 호출 시 내부에서 노크 소리까지 처리함
+      if (isZeroAmount || isCheckAction || isFoldAction) {
+        // 체크, 폴드, 혹은 0원 액션은 칩 소리를 내지 않음
       } else if (action === '콜' || action === '레이즈' || action === '올인' || action === '베트' || label?.includes('콜') || label?.includes('레이즈')) {
         const randIdx = Math.floor(Math.random() * 3) + 1;
         playSFX(`chip_sound${randIdx}.mp3`);
