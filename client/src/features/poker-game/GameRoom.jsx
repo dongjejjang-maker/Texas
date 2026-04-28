@@ -240,11 +240,8 @@ function GameRoom({ userInfo, setUserInfo }) {
       const supportedActions = ['call', 'fold', 'check', 'raise', 'allin', 'bet'];
       
       if (supportedActions.includes(actionKey)) {
-        // 🔄 체크일 경우 노크 소리, 나머지는 음성 MP3
-        const fileName = (actionKey === 'check') ? 'check_knock.mp3' : `${actionKey}.mp3`;
-        const filePath = (actionKey === 'check') ? `/sound/${fileName}` : `/sound/action/${fileName}`;
-        
-        const audio = new Audio(`${filePath}?v=${Date.now()}`);
+        // 🔄 액션 음성 MP3 재생 (캐시 방지)
+        const audio = new Audio(`/sound/action/${actionKey}.mp3?v=${Date.now()}`);
         audio.volume = sfxVolume;
         audio.play().catch(e => console.warn(`Action sound [${actionKey}] play failed:`, e));
       }
@@ -457,10 +454,14 @@ function GameRoom({ userInfo, setUserInfo }) {
     const handleDealPrivateCards = (cards) => setMyCards(cards);
 
     socket.on('playerActionNotification', ({ nickname, action, label, amount }) => {
-      // 🍏 칩 효과음 재생 (체크는 노크 소리, 나머지는 랜덤 칩 소리)
-      if (action === '체크' || label === '체크') {
+      // 🍏 [수정] 실제 표시되는 라벨(label)을 우선하여 음성 재생 (콜 0원 -> 체크 음성)
+      const finalAction = label === '체크' ? '체크' : action;
+      playActionSound(finalAction);
+
+      // 🍏 칩 효과음 재생 (체크는 노크 소리만, 나머지는 랜덤 칩 소리)
+      if (finalAction === '체크') {
         playSFX('check_knock.mp3');
-      } else if (action === '콜' || action === '레이즈' || action === '올인') {
+      } else if (finalAction === '콜' || finalAction === '레이즈' || finalAction === '올인' || finalAction === '베트') {
         const randIdx = Math.floor(Math.random() * 3) + 1;
         playSFX(`chip_sound${randIdx}.mp3`);
       }
