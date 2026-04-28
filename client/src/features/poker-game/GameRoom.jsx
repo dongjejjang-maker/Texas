@@ -230,6 +230,42 @@ function GameRoom({ userInfo, setUserInfo }) {
     }
   }, [gameState?.bgmFile, bgmVolume]);
 
+  // 🍏 [개편] TTS 대신 준비된 MP3 액션 사운드 재생
+  const playActionSound = (action) => {
+    try {
+      const actionKey = action.toLowerCase();
+      // 지원하는 액션 파일 리스트
+      const supportedActions = ['call', 'fold', 'check', 'raise', 'allin', 'bet'];
+      
+      if (supportedActions.includes(actionKey)) {
+        const audio = new Audio(`/sound/action/${actionKey}.mp3`);
+        audio.volume = sfxVolume;
+        audio.play().catch(e => console.warn('Action sound play failed:', e));
+      }
+    } catch (e) {
+      console.error('Action sound error:', e);
+    }
+  };
+
+  const handlePlayerActionNotification = ({ nickname, action, label, amount }) => {
+    // 🍏 기존 TTS 대신 신규 액션 사운드 재생 호출
+    playActionSound(action);
+
+    // 액션 말풍선 표시 로직
+    setPlayerActions(prev => ({
+      ...prev,
+      [nickname]: { label, amount, timestamp: Date.now() }
+    }));
+    
+    setTimeout(() => {
+      setPlayerActions(prev => {
+        const next = { ...prev };
+        delete next[nickname];
+        return next;
+      });
+    }, 2500);
+  };
+
   // 🍏 [페이즈/카드 변화에 따른 효과음 트리거]
   const prevPhase = useRef('');
   const prevCardCount = useRef(0);

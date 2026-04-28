@@ -43,8 +43,17 @@ const LobbyScreen = ({ userInfo, setUserInfo }) => {
     socket.emit('joinLobby');
     socket.on('lobbyUpdate', (r) => setRooms(r));
     
+    // 🍏 [심장박동 세팅] Render 서버의 Sleep(Spin-down) 방지를 위해 5분마다 핑을 보냄
+    const heartbeatInterval = setInterval(() => {
+      fetch(`${SERVER_URL}/api/ping`)
+        .then(res => res.text())
+        .then(text => console.log('💓 Heartbeat:', text))
+        .catch(e => console.error('💔 Heartbeat failed:', e));
+    }, 1000 * 60 * 5); // 5분 간격
+
     return () => {
       socket.off('lobbyUpdate');
+      clearInterval(heartbeatInterval);
     };
   }, []);
 
