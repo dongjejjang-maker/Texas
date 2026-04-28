@@ -133,20 +133,17 @@ function GameRoom({ userInfo, setUserInfo }) {
     localStorage.setItem('poker_sfx_volume', sfxVolume.toString());
   }, [sfxVolume]);
 
-  // 🍏 iOS Safari 등에서 TTS 기능을 활성화(Unlock)하기 위한 빈 소리 재생 로직
-  const unlockTTS = () => {
-    if (!window.speechSynthesis) return;
-    const u = new SpeechSynthesisUtterance('');
-    u.volume = 0;
-    window.speechSynthesis.speak(u);
-    console.log('TTS Unlocked for iOS');
-    // 한 번만 실행되도록 이벤트 리스너 제거용으로도 사용 가능
+  // 🍏 iOS Safari 등에서 오디오 기능을 활성화(Unlock)하기 위한 빈 소리 재생 로직
+  const unlockAudio = () => {
+    const audio = new Audio();
+    audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+    audio.play().then(() => console.log('Audio Unlocked for iOS')).catch(() => {});
   };
 
   useEffect(() => {
-    // 사용자가 방에 들어왔을 때 첫 클릭 시 TTS 잠금 해제
-    window.addEventListener('click', unlockTTS, { once: true });
-    return () => window.removeEventListener('click', unlockTTS);
+    // 사용자가 방에 들어왔을 때 첫 클릭 시 오디오 잠금 해제
+    window.addEventListener('click', unlockAudio, { once: true });
+    return () => window.removeEventListener('click', unlockAudio);
   }, []);
 
   const volumeRef = useRef(0.5); // 하위 호환용 (필요시 제거 가능)
@@ -230,24 +227,20 @@ function GameRoom({ userInfo, setUserInfo }) {
     }
   }, [gameState?.bgmFile, bgmVolume]);
 
-  // 🍏 [개편] TTS 대신 준비된 MP3 액션 사운드 재생
+  // 🍏 [개편] TTS 대신 준비된 MP3 액션 사운드 재생 (캐시 방지 로직 추가)
   const playActionSound = (action) => {
     try {
-      // 서버에서 오는 한글 액션을 영문 파일명으로 매핑
       const actionMap = {
-        '콜': 'call',
-        '폴드': 'fold',
-        '체크': 'check',
-        '레이즈': 'raise',
-        '올인': 'allin',
-        '베트': 'bet'
+        '콜': 'call', '폴드': 'fold', '체크': 'check',
+        '레이즈': 'raise', '올인': 'allin', '베트': 'bet'
       };
       
       const actionKey = actionMap[action] || action.toLowerCase();
       const supportedActions = ['call', 'fold', 'check', 'raise', 'allin', 'bet'];
       
       if (supportedActions.includes(actionKey)) {
-        const audio = new Audio(`/sound/action/${actionKey}.mp3`);
+        // 🔄 캐시 방지를 위해 버전 쿼리 추가
+        const audio = new Audio(`/sound/action/${actionKey}.mp3?v=${Date.now()}`);
         audio.volume = sfxVolume;
         audio.play().catch(e => console.warn(`Action sound [${actionKey}] play failed:`, e));
       }
