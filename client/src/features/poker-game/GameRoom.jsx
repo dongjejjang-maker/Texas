@@ -344,16 +344,29 @@ function GameRoom({ userInfo, setUserInfo }) {
       // 🍏 게임 진행 중에는 실제 보드 카드 수를 그대로 따름
       setVisualBoardCount(gameState?.communityCards?.length || 0);
     } else if (enteringEndPhase) {
-      // 🎯 쇼다운/종료 페이즈 진입 시 순차적 오픈 연출
+      // 🎯 쇼다운/종료 페이즈 진입 시 카드 애니메이션(fDelay)과 완벽 동기화
       const startCount = preShowdownCardCountRef.current;
       const finalCount = gameState?.communityCards?.length || 0;
+      
+      // 초기값 설정
       setVisualBoardCount(startCount);
 
       if (finalCount > startCount) {
-        for (let i = 1; i <= (finalCount - startCount); i++) {
-          setTimeout(() => {
-            setVisualBoardCount(startCount + i);
-          }, i * 800); // 0.8초 간격으로 한 장씩 족보 계산에 추가
+        // 1. 플랍 동기화 (3장)
+        if (startCount < 3 && finalCount >= 3) {
+          setTimeout(() => setVisualBoardCount(3), 500); // 플랍 뒤집히는 시간 고려 0.5초
+        }
+
+        // 2. 턴 동기화 (4장) - fDelay: 1s
+        if (startCount < 4 && finalCount >= 4) {
+          const delay = startCount < 3 ? 1500 : 1000; // 플랍부터 시작이면 약간 더 뒤에
+          setTimeout(() => setVisualBoardCount(4), delay);
+        }
+
+        // 3. 리버 동기화 (5장) - fDelay: 2.5s (또는 1.5s)
+        if (startCount < 5 && finalCount === 5) {
+          const delay = startCount < 3 ? 3000 : 2000;
+          setTimeout(() => setVisualBoardCount(5), delay);
         }
       }
     }
