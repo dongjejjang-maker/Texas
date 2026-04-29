@@ -502,16 +502,24 @@ app.post('/api/sessions/:id/end', (req, res) => {
     
     session.status = 'ended';
 
-    // 온라인 세션인 경우 참가자들의 currentSessionId 초기화
-    if (session.type === 'online') {
-        session.participants.forEach(p => {
-            if (p.linkedUserId) {
-                const user = usersDB.find(u => u.id === p.linkedUserId);
-                if (user) {
+    // [보강] 세션 종료 시점의 참가자 데이터(칩, 리바인)를 스냅샷으로 고정
+    session.participants.forEach(p => {
+        if (p.linkedUserId) {
+            const user = usersDB.find(u => u.id === p.linkedUserId);
+            if (user) {
+                // 종료 시점의 데이터를 세션 기록에 고정하여 저장
+                p.chips = user.chips;
+                p.rebuyCount = user.rebuyCount;
+                
+                // 온라인 세션인 경우 참가자의 세션 참여 상태 해제
+                if (session.type === 'online') {
                     user.currentSessionId = null;
                 }
             }
-        });
+        }
+    });
+
+    if (session.type === 'online') {
         saveDB(usersDB);
     }
 
@@ -524,18 +532,8 @@ app.post('/api/sessions/:id/settle', (req, res) => {
     const session = sessionsDB.find(s => s.id === req.params.id);
     if (!session) return res.status(404).json({ success: false, message: '세션을 찾을 수 없습니다.' });
 
-    // 온라인 세션이면 최신 칩 동기화
-    if (session.type === 'online') {
-        session.participants.forEach(p => {
-            if (p.linkedUserId) {
-                const user = usersDB.find(u => u.id === p.linkedUserId);
-                if (user) {
-                    p.chips = user.chips;
-                    p.rebuyCount = user.rebuyCount;
-                }
-            }
-        });
-    }
+    // 🍏 [수정] 정산 시 실시간 DB를 조회하지 않고, 세션 종료(end) 시점에 고정된 스냅샷 데이터를 사용함
+    // (이미 /api/sessions/:id/end 에서 p.chips, p.rebuyCount가 업데이트됨)
 
     const settlement = session.participants.map(p => {
         const totalInvested = session.buyIn + (session.buyIn * p.rebuyCount);
