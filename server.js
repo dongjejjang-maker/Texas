@@ -453,6 +453,45 @@ app.get('/api/sessions', (req, res) => {
     res.json({ success: true, sessions: sessionsDB });
 });
 
+// 🎯 [신규 API] 세션 손익 기반 플레이어 랭킹 조회
+app.get('/api/rankings', (req, res) => {
+    const onlineMap = {};
+    const offlineMap = {};
+
+    sessionsDB.forEach(session => {
+        // 종료되고 정산이 완료된 세션만 포함
+        if (session.status === 'ended' && session.settlement && Array.isArray(session.settlement)) {
+            const map = session.type === 'online' ? onlineMap : offlineMap;
+            
+            session.settlement.forEach(p => {
+                const name = p.nickname;
+                if (!name) return;
+                
+                if (!map[name]) {
+                    map[name] = {
+                        nickname: name,
+                        totalProfit: 0,
+                        sessionCount: 0,
+                        totalRebuys: 0
+                    };
+                }
+                map[name].totalProfit += (p.profit || 0);
+                map[name].sessionCount += 1;
+                map[name].totalRebuys += (p.rebuyCount || 0);
+            });
+        }
+    });
+
+    const onlineRanking = Object.values(onlineMap).sort((a, b) => b.totalProfit - a.totalProfit);
+    const offlineRanking = Object.values(offlineMap).sort((a, b) => b.totalProfit - a.totalProfit);
+
+    res.json({
+        success: true,
+        onlineRanking,
+        offlineRanking
+    });
+});
+
 // 🎯 [신규 API] 세션 상세 조회
 app.get('/api/sessions/:id', (req, res) => {
     const session = sessionsDB.find(s => s.id === req.params.id);

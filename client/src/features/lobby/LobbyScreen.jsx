@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import socket from '../../utils/socket';
 import { SERVER_URL } from '../../utils/constants';
 import SessionModal from './SessionModal';
+import RankingModal from './RankingModal';
 
 const LobbyScreen = ({ userInfo, setUserInfo }) => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const LobbyScreen = ({ userInfo, setUserInfo }) => {
   const [newNickname, setNewNickname] = useState('');
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showRankingModal, setShowRankingModal] = useState(false);
 
   // 🎯 칩 조절 상태
   const [chipInput, setChipInput] = useState('');
@@ -168,6 +170,7 @@ const LobbyScreen = ({ userInfo, setUserInfo }) => {
           <button className="premium-btn danger-btn" style={{ padding: '5px 10px', fontSize: '0.8rem' }} onClick={() => { localStorage.removeItem('holdem_user'); setUserInfo(null); window.location.href = '/'; }}>로그아웃</button>
           <button className="premium-btn secondary-btn" style={{ padding: '5px 10px', fontSize: '0.8rem' }} onClick={() => setShowProfileModal(true)}>프로필</button>
           <button className="premium-btn secondary-btn" style={{ padding: '5px 10px', fontSize: '0.8rem' }} onClick={() => setShowSessionModal(true)}>세션</button>
+          <button className="premium-btn secondary-btn" style={{ padding: '5px 10px', fontSize: '0.8rem' }} onClick={() => setShowRankingModal(true)}>🏆 랭킹</button>
           <button className="premium-btn primary-btn" style={{ padding: '5px 15px' }} onClick={() => setShowModal(true)}>+ 방 만들기</button>
         </div>
       </div>
@@ -261,6 +264,13 @@ const LobbyScreen = ({ userInfo, setUserInfo }) => {
           userInfo={userInfo}
           setUserInfo={setUserInfo}
           onClose={() => setShowSessionModal(false)}
+        />
+      )}
+
+      {/* 🎯 랭킹 모달 */}
+      {showRankingModal && (
+        <RankingModal
+          onClose={() => setShowRankingModal(false)}
         />
       )}
     </div>
