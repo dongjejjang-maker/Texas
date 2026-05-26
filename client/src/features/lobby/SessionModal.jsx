@@ -64,8 +64,31 @@ const SessionModal = ({ userInfo, setUserInfo, onClose }) => {
       activeReceivers = activeReceivers.filter(r => r.amount > 0.01);
     }
 
+    // 돈을 잃은 사람(입금자명) 기준으로 묶기
+    const groups = {};
+    transfers.forEach(t => {
+      if (!groups[t.from]) {
+        groups[t.from] = {
+          from: t.from,
+          totalAmount: 0,
+          list: []
+        };
+      }
+      groups[t.from].totalAmount += t.amount;
+      groups[t.from].list.push(t);
+    });
+
+    // 보낼 총액 기준 내림차순 정렬
+    const sortedGroups = Object.values(groups).sort((a, b) => b.totalAmount - a.totalAmount);
+
+    // 각 보낼 사람 그룹 내에서도 보낼 개별 금액 내림차순 정렬
+    sortedGroups.forEach(g => {
+      g.list.sort((a, b) => b.amount - a.amount);
+    });
+
     setCashoutData({
       transfers,
+      sortedGroups,
       discrepancy,
       sum
     });
@@ -543,28 +566,37 @@ const SessionModal = ({ userInfo, setUserInfo, onClose }) => {
             )}
 
             {/* 송금 가이드 리스트 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
-              {cashoutData.transfers.length > 0 ? (
-                cashoutData.transfers.map((t, idx) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
+              {cashoutData.sortedGroups && cashoutData.sortedGroups.length > 0 ? (
+                cashoutData.sortedGroups.map((group, idx) => (
                   <div key={idx} style={{
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: '10px',
-                    padding: '12px 16px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    padding: '14px 16px',
                     boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '15px' }}>{t.from}</span>
-                      <span style={{ color: '#94a3b8', fontSize: '12px' }}>➔</span>
-                      <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '15px' }}>{t.to}</span>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ color: '#fbbf24', fontWeight: '800', fontSize: '16px' }}>
-                        {t.amount.toLocaleString()}원
+                    {/* 그룹 헤더: 보낼 사람 이름과 총 송금액 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '8px' }}>
+                      <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '15px' }}>
+                        🔴 {group.from} (보낼 총액)
                       </span>
+                      <span style={{ color: '#ef4444', fontWeight: '800', fontSize: '15px' }}>
+                        {group.totalAmount.toLocaleString()}원
+                      </span>
+                    </div>
+                    {/* 그룹 내 개별 송금 경로 */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {group.list.map((t, tIdx) => (
+                        <div key={tIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
+                          <span style={{ color: '#94a3b8' }}>
+                            ➔ <strong style={{ color: '#10b981' }}>{t.to}</strong> 님에게
+                          </span>
+                          <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
+                            {t.amount.toLocaleString()}원
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))
