@@ -1646,4 +1646,52 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => { 
     console.log(`정통 홀덤 서버 완벽 가동 중! (Port: ${PORT}) 🚀`); 
 });
-// 🔄 Reboot Trigger: 2026-04-27 23:59
+
+// 🍏 [Self-Ping] 진행중인 오프라인 세션이 있을 경우 Render 서버 Sleep(Spin-down) 방지를 위해 10분마다 self-ping
+const https = require('https');
+
+function keepServerAwake() {
+    const url = process.env.RENDER_EXTERNAL_URL;
+    if (!url) {
+        console.log('[Keep-Awake] RENDER_EXTERNAL_URL environment variable is not defined. Skipping self-ping.');
+        return;
+    }
+
+    try {
+        const parsedUrl = new URL(url);
+        const pingUrl = new URL('/health', url).toString();
+        const client = parsedUrl.protocol === 'https:' ? https : http;
+
+        client.get(pingUrl, (res) => {
+            console.log(`[Keep-Awake] Sent self-ping to ${pingUrl}. Status: ${res.statusCode}`);
+        }).on('error', (err) => {
+            console.error(`[Keep-Awake] Error during self-ping: ${err.message}`);
+        });
+    } catch (err) {
+        console.error(`[Keep-Awake] Invalid self-ping URL:`, err.message);
+    }
+}
+
+// 10분마다 체크하여 오프라인 세션이 진행 중일 때만 self-ping 실행
+const KEEP_AWAKE_INTERVAL = 10 * 60 * 1000;
+setInterval(() => {
+    if (typeof sessionsDB !== 'undefined' && Array.isArray(sessionsDB)) {
+        const hasActiveOfflineSession = sessionsDB.some(s => s.type === 'offline' && s.status === 'active');
+        if (hasActiveOfflineSession) {
+            console.log('[Keep-Awake] Active offline session detected. Pinging server to prevent sleep...');
+            keepServerAwake();
+        }
+    }
+}, KEEP_AWAKE_INTERVAL);
+
+// 서버 기동 5초 후 첫 체크 실행
+setTimeout(() => {
+    if (typeof sessionsDB !== 'undefined' && Array.isArray(sessionsDB)) {
+        const hasActiveOfflineSession = sessionsDB.some(s => s.type === 'offline' && s.status === 'active');
+        if (hasActiveOfflineSession) {
+            console.log('[Keep-Awake] Active offline session detected on startup. Initial ping...');
+            keepServerAwake();
+        }
+    }
+}, 5000);
+
