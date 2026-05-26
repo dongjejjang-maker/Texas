@@ -14,6 +14,64 @@ const SessionModal = ({ userInfo, setUserInfo, onClose }) => {
   const [settlement, setSettlement] = useState(null);
   const [newParticipantName, setNewParticipantName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCashoutModal, setShowCashoutModal] = useState(false);
+  const [cashoutData, setCashoutData] = useState(null);
+
+  // 캐시아웃(최소 송금 단순화 및 무결성 검증) 계산
+  const handleOpenCashout = () => {
+    if (!settlement || settlement.length === 0) return;
+
+    // 1. 무결성 검증 (손익의 총합이 0이 맞는지 검증)
+    const sum = settlement.reduce((acc, curr) => acc + curr.profit, 0);
+    const discrepancy = sum; // 0이 아니면 오차가 존재함
+
+    // 2. 부채 단순화 (그리디 최소 송금 경로 매칭)
+    const givers = []; // 줄 사람 (profit < 0)
+    const receivers = []; // 받을 사람 (profit > 0)
+
+    settlement.forEach(p => {
+      if (p.profit < 0) {
+        givers.push({ nickname: p.nickname, amount: Math.abs(p.profit) });
+      } else if (p.profit > 0) {
+        receivers.push({ nickname: p.nickname, amount: p.profit });
+      }
+    });
+
+    let activeGivers = givers.map(g => ({ ...g }));
+    let activeReceivers = receivers.map(r => ({ ...r }));
+    const transfers = [];
+
+    while (activeGivers.length > 0 && activeReceivers.length > 0) {
+      // 절대값 기준 내림차순 정렬
+      activeGivers.sort((a, b) => b.amount - a.amount);
+      activeReceivers.sort((a, b) => b.amount - a.amount);
+
+      const giver = activeGivers[0];
+      const receiver = activeReceivers[0];
+
+      const transferAmount = Math.min(giver.amount, receiver.amount);
+      transfers.push({
+        from: giver.nickname,
+        to: receiver.nickname,
+        amount: Math.round(transferAmount)
+      });
+
+      giver.amount -= transferAmount;
+      receiver.amount -= transferAmount;
+
+      // 0 이하가 된 사람 제외
+      activeGivers = activeGivers.filter(g => g.amount > 0.01);
+      activeReceivers = activeReceivers.filter(r => r.amount > 0.01);
+    }
+
+    setCashoutData({
+      transfers,
+      discrepancy,
+      sum
+    });
+    setShowCashoutModal(true);
+  };
+
 
   // 세션 목록 로드
   const fetchSessions = async () => {
@@ -382,6 +440,17 @@ const SessionModal = ({ userInfo, setUserInfo, onClose }) => {
             {loading ? '계산 중...' : '정산'}
           </button>
 
+          {/* 캐시아웃 버튼 (정산 데이터가 있을 때만 활성화) */}
+          {settlement && (
+            <button 
+              className="premium-btn success-btn" 
+              onClick={handleOpenCashout}
+              style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }}
+            >
+              💰 캐시아웃
+            </button>
+          )}
+
           {/* 오프라인 or 종료된 세션: 수정/저장 토글 */}
           {(s.type === 'offline' || s.status === 'ended') && (
             isEditing ? (
@@ -423,6 +492,99 @@ const SessionModal = ({ userInfo, setUserInfo, onClose }) => {
         {view === 'create' && renderCreate()}
         {view === 'detail' && renderDetail()}
       </div>
+
+      {/* 💰 캐시아웃 모달 팝업 */}
+      {showCashoutModal && cashoutData && (
+        <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={(e) => { e.stopPropagation(); setShowCashoutModal(false); }}>
+          <div className="modal-content glass-panel animate-fade-in cashout-modal" onClick={e => e.stopPropagation()} style={{ width: '420px', maxWidth: '90vw', margin: 'auto', padding: '25px' }}>
+            
+            {/* 모달 헤더 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 className="title-text" style={{ fontSize: '20px', margin: 0, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                💰 캐시아웃 송금 가이드
+              </h3>
+              <button className="premium-btn danger-btn" style={{ padding: '5px 12px' }} onClick={() => setShowCashoutModal(false)}>✕</button>
+            </div>
+
+            {/* 무결성 검증 표시 */}
+            {cashoutData.discrepancy !== 0 ? (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid #ef4444',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '15px',
+                color: '#f87171',
+                fontSize: '13px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                <span style={{ fontWeight: 'bold' }}>⚠️ 칩 계산 오차 감지!</span>
+                <span>손익의 총합이 0이 아닙니다. (누락/초과: {cashoutData.discrepancy.toLocaleString()}원)</span>
+                <span style={{ fontSize: '11px', opacity: 0.8 }}>* 바이인 대비 정산 시점의 보유 칩에 오차가 있습니다. 장부를 다시 확인해 보세요.</span>
+              </div>
+            ) : (
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid #10b981',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '15px',
+                color: '#34d399',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <span>✓</span> 모든 플레이어의 손익 합이 0원입니다. (무결성 검증 완료)
+              </div>
+            )}
+
+            {/* 송금 가이드 리스트 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
+              {cashoutData.transfers.length > 0 ? (
+                cashoutData.transfers.map((t, idx) => (
+                  <div key={idx} style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '15px' }}>{t.from}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '12px' }}>➔</span>
+                      <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '15px' }}>{t.to}</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ color: '#fbbf24', fontWeight: '800', fontSize: '16px' }}>
+                        {t.amount.toLocaleString()}원
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ color: '#94a3b8', textAlign: 'center', padding: '20px 0', fontSize: '14px' }}>
+                  송금할 내역이 없습니다.
+                </div>
+              )}
+            </div>
+
+            {/* 하단 닫기 버튼 */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button className="premium-btn secondary-btn" style={{ width: '100%' }} onClick={() => setShowCashoutModal(false)}>
+                닫기
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };
